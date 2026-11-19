@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "waveycapes",
+  "version": "${version}",
+  "name": "Template",
+  "description": "",
+  "authors": [
+    "DanyGames2014"
+  ],
+
+  "license": "MIT",
+  "icon": "assets/template/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "stationapi:event_bus": [
+    ],
+    "stationapi:event_bus_client": [
+    ],
+    "stationapi:event_bus_server": [
+    ]
+  },
+  "mixins": [
+    "wavey_cape.mixin.json"
+  ],
+
+  "depends": {
+    "minecraft": "1.0.0-beta.7.3"
+  }
+}
