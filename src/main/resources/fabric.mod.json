@@ -9,7 +9,6 @@
   ],
 
   "license": "MIT",
-  "icon": "assets/template/icon.png",
   "environment": "client",
   "entrypoints": {
     "stationapi:event_bus": [
