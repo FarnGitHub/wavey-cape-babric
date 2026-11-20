@@ -23,7 +23,7 @@ public class PlayerMixin implements PlayerImpl {
 
     @Inject(method = "tickLiving", at = @At("HEAD"))
     private void moveCloakUpdate(CallbackInfo info) {
-        waveycape_getSimulation().simulate((PlayerEntity) (Object)this);
+        waveycape_simulate((PlayerEntity)(Object)this);
     }
     
 }
