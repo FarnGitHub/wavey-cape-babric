@@ -7,34 +7,22 @@ import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import dev.tr7zw.waveycapes.renderlayers.CustomCapeRenderLayer;
 
 @Mixin(PlayerEntityRenderer.class)
 public class PlayerRendererMixin {
-
-    @Shadow
-    private BipedEntityModel bipedModel;
     @Unique
-    private CustomCapeRenderLayer waveyCapesLayer;
+    private CustomCapeRenderLayer waveyCapesLayer = new CustomCapeRenderLayer();
 
-    @Inject(method = "<init>*", at = @At("RETURN"))
-    public void onCreate(CallbackInfo info) {
-        PlayerEntityRenderer self = (PlayerEntityRenderer) (Object) this;
-        waveyCapesLayer = new CustomCapeRenderLayer(self, this.bipedModel);
-    }
 
     @WrapOperation(method = "renderMore(Lnet/minecraft/entity/player/PlayerEntity;F)V", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/render/entity/model/BipedEntityModel;renderCape(F)V"))
     private void waveyCapes$redirectRenderCloak(BipedEntityModel instance, float scale, Operation<Void> original, @Local(argsOnly = true, type = PlayerEntity.class) PlayerEntity player, @Local(argsOnly = true, type = float.class) float tick) {
         if (waveyCapesLayer != null && player != null) {
-            waveyCapesLayer.doRenderLayer(player, 0.0F, 0.0F, tick, 0.0F, 0.0F, 0.0F, 0.0F,
-                    true);
+            waveyCapesLayer.doRenderLayer(player, tick,true);
         }
     }
 

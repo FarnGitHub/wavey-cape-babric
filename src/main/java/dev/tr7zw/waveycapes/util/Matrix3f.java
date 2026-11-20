@@ -4,23 +4,23 @@ import java.nio.FloatBuffer;
 
 public final class Matrix3f {
 
-    protected float m00;
+    private float m00;
 
-    protected float m01;
+    private float m01;
 
-    protected float m02;
+    private float m02;
 
-    protected float m10;
+    private float m10;
 
-    protected float m11;
+    private float m11;
 
-    protected float m12;
+    private float m12;
 
-    protected float m20;
+    private float m20;
 
-    protected float m21;
+    private float m21;
 
-    protected float m22;
+    private float m22;
 
     public Matrix3f() {
     }

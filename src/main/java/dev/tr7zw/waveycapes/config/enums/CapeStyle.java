@@ -1,4 +1,4 @@
-package dev.tr7zw.waveycapes;
+package dev.tr7zw.waveycapes.config.enums;
 
 public enum CapeStyle {
     BLOCKY, SMOOTH

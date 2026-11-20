@@ -4,37 +4,37 @@ import java.nio.FloatBuffer;
 
 public final class Matrix4f {
 
-    protected float m00;
+    float m00;
 
-    protected float m01;
+    float m01;
 
-    protected float m02;
+    float m02;
 
-    protected float m03;
+    float m03;
 
-    protected float m10;
+    float m10;
 
-    protected float m11;
+    float m11;
 
-    protected float m12;
+    float m12;
 
-    protected float m13;
+    float m13;
 
-    protected float m20;
+    float m20;
 
-    protected float m21;
+    float m21;
 
-    protected float m22;
+    float m22;
 
-    protected float m23;
+    float m23;
 
-    protected float m30;
+    float m30;
 
-    protected float m31;
+    float m31;
 
-    protected float m32;
+    float m32;
 
-    protected float m33;
+    float m33;
 
     public Matrix4f() {
     }

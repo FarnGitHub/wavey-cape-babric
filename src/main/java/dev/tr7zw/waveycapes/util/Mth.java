@@ -28,10 +28,6 @@ public class Mth {
         return g;
     }
 
-    public static double clamp(double value, double min, double max) {
-        return Math.min(Math.max(value, min), max);
-    }
-
     public static float clamp(float value, float min, float max) {
         return Math.min(Math.max(value, min), max);
     }

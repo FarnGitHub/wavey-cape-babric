@@ -3,26 +3,65 @@ package dev.tr7zw.waveycapes.sim;
 import java.util.ArrayList;
 import java.util.List;
 
-import dev.tr7zw.waveycapes.WaveyCapesBase;
+import dev.tr7zw.waveycapes.WaveyCapes;
 import dev.tr7zw.waveycapes.util.Mth;
+import net.minecraft.entity.player.PlayerEntity;
 
 /**
- * Java port of https://www.youtube.com/watch?v=PGk0rnyTa1U by Sebastian Lague
+ * Java port of <a href="https://www.youtube.com/watch?v=PGk0rnyTa1U">...</a> by Sebastian Lague
  * Has some changes like maximizing bends, only designed to simulate a single
  * "rope"(cape). Point 0 is the part fixed to the player
  *
  */
-public class StickSimulation {
+public class Simulation {
 
     public List<Point> points = new ArrayList<>();
     public List<Stick> sticks = new ArrayList<>();
     public float gravity = 20f;
     public int numIterations = 30;
-    private float maxBend = 5;
+
+    public void updateSimulation(PlayerEntity player, int partCount) {
+        boolean dirty = false;
+        if(this.points.size() != partCount) {
+            this.points.clear();
+            this.sticks.clear();
+            for (int i = 0; i < partCount; i++) {
+                Point point = new Point();
+                point.position.y = -i;
+                point.locked = i == 0;
+                this.points.add(point);
+                if(i > 0) {
+                    this.sticks.add(new Stick(this.points.get(i-1), point, 1f));
+                }
+            }
+            dirty = true;
+        }
+        if(dirty) {
+            for(int i = 0; i < 10; i++) // quickly doing a few simulation steps to get the cape int a stable configuration
+                simulate(player);
+        }
+    }
+
+    public void simulate(PlayerEntity player) {
+        if(this.points.isEmpty()) {
+            return; // no cape, nothing to update
+        }
+        this.points.get(0).prevPosition.copy(this.points.get(0).position);
+        float d = (float)(player.capeX - player.x);
+        float m = (float)(player.capeZ- player.z);
+        float n = player.lastBodyYaw + player.bodyYaw - player.lastBodyYaw;
+        float o = (float)Math.sin(n * 0.017453292F);
+        float p = (float)-Math.cos(n * 0.017453292F);
+        float heightMul = WaveyCapes.config.heightMultiplier;
+        // gives the cape a small swing when jumping/falling to not clip with itself/simulate some air getting under it
+        float fallHack = Mth.clamp((float)(this.points.get(0).position.y - (player.y*heightMul)), 0f, 1f);
+        this.points.get(0).position.x += (d * o + m * p) + fallHack;
+        this.points.get(0).position.y = (float) (player.y*heightMul + (player.isSneaking() ? -4 : 0));
+        this.simulate();
+    }
 
     public void simulate() {
-        gravity = WaveyCapesBase.config.gravity;
-        //maxBend = WaveyCapesBase.config.maxBend;
+        gravity = WaveyCapes.config.gravity;
 
         float deltaTime = 50f/1000f; // fixed timescale
         Vector2 down = new Vector2(0, gravity * deltaTime);
@@ -30,7 +69,6 @@ public class StickSimulation {
         for (Point p : points) {
             if (!p.locked) {
                 tmp.copy(p.position);
-                // p.position.add(p.position).subtract(p.prevPosition);
                 p.position.subtract(down);
                 p.prevPosition.copy(tmp);
             }
@@ -55,15 +93,14 @@ public class StickSimulation {
                 angle += 360;
             }
             double abs = Math.abs(angle);
+            float maxBend = 5;
             if (abs < 180 - maxBend) {
-                Vector2 replacement = getReplacement(points.get(i).position, points.get(i - 1).position, angle,
+                points.get(i + 1).position = getReplacement(points.get(i).position, points.get(i - 1).position, angle,
                         180 - maxBend + 1);
-                points.get(i + 1).position = replacement;
             }
             if (abs > 180 + maxBend) {
-                Vector2 replacement = getReplacement(points.get(i).position, points.get(i - 1).position, angle,
+                points.get(i + 1).position = getReplacement(points.get(i).position, points.get(i - 1).position, angle,
                         180 + maxBend - 1);
-                points.get(i + 1).position = replacement;
             }
         }
 
@@ -82,8 +119,7 @@ public class StickSimulation {
             }
         }
         // fix in the position/length, this prevents it from acting like a spring/stretchy
-        for (int x = 0; x < sticks.size(); x++) {
-            Stick stick = sticks.get(x);
+        for (Stick stick : sticks) {
             Vector2 stickDir = stick.pointA.position.clone().subtract(stick.pointB.position).normalize();
             if (!stick.pointB.locked) {
                 stick.pointB.position = stick.pointA.position.clone().subtract(stickDir.mul(stick.length));
@@ -141,8 +177,12 @@ public class StickSimulation {
             this.y = y;
         }
 
-        public Vector2 clone() {
-            return new Vector2(x, y);
+        public Vector2 clone(){
+            try {
+                return (Vector2)super.clone();
+            } catch (CloneNotSupportedException e) {
+                return new Vector2(x, y);
+            }
         }
 
         public void copy(Vector2 vec) {

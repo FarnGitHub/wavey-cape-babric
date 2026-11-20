@@ -7,23 +7,23 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import dev.tr7zw.waveycapes.CapeHolder;
-import dev.tr7zw.waveycapes.sim.StickSimulation;
+import dev.tr7zw.waveycapes.impl.PlayerImpl;
+import dev.tr7zw.waveycapes.sim.Simulation;
 
 @Mixin(PlayerEntity.class)
-public class PlayerMixin implements CapeHolder {
+public class PlayerMixin implements PlayerImpl {
 
     @Unique
-    private StickSimulation waveycape_stickSimulation = new StickSimulation();
+    private Simulation waveycape_stickSimulation = new Simulation();
     
     @Override
-    public StickSimulation waveycape_getSimulation() {
+    public Simulation waveycape_getSimulation() {
         return waveycape_stickSimulation;
     }
 
     @Inject(method = "tickLiving", at = @At("HEAD"))
     private void moveCloakUpdate(CallbackInfo info) {
-        simulate((PlayerEntity) (Object)this);
+        waveycape_getSimulation().simulate((PlayerEntity) (Object)this);
     }
     
 }
