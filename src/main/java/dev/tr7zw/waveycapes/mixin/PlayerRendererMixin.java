@@ -17,13 +17,9 @@ public class PlayerRendererMixin {
     @Unique
     private CustomCapeRenderLayer waveyCapesLayer = new CustomCapeRenderLayer();
 
-
-    @WrapOperation(method = "renderMore(Lnet/minecraft/entity/player/PlayerEntity;F)V", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/render/entity/model/BipedEntityModel;renderCape(F)V"))
+    @WrapOperation(method = "renderMore(Lnet/minecraft/entity/player/PlayerEntity;F)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/model/BipedEntityModel;renderCape(F)V"))
     private void waveyCapes$redirectRenderCloak(BipedEntityModel instance, float scale, Operation<Void> original, @Local(argsOnly = true, type = PlayerEntity.class) PlayerEntity player, @Local(argsOnly = true, type = float.class) float tick) {
-        if (waveyCapesLayer != null && player != null) {
-            waveyCapesLayer.doRenderLayer(player, tick,true);
-        }
+        waveyCapesLayer.doRenderLayer(player, tick,true);
     }
 
 }

@@ -21,7 +21,6 @@ public class Simulation {
 
     public void simulate() {
         gravity = WaveyCapes.config.gravity;
-        //maxBend = WaveyCapesBase.config.maxBend;
 
         float deltaTime = 50f/1000f; // fixed timescale
         Vector2 down = new Vector2(0, gravity * deltaTime);
@@ -68,13 +67,13 @@ public class Simulation {
         for (int i = 0; i < numIterations; i++) {
             for (int x = sticks.size() - 1; x >= 0; x--) {
                 Stick stick = sticks.get(x);
-                Vector2 stickCentre = stick.pointA.position.clone().add(stick.pointB.position).div(2);
-                Vector2 stickDir = stick.pointA.position.clone().subtract(stick.pointB.position).normalize();
+                Vector2 stickCentre = stick.pointA.position.copy().add(stick.pointB.position).div(2);
+                Vector2 stickDir = stick.pointA.position.copy().subtract(stick.pointB.position).normalize();
                 if (!stick.pointA.locked) {
-                    stick.pointA.position = stickCentre.clone().add(stickDir.clone().mul(stick.length / 2));
+                    stick.pointA.position = stickCentre.copy().add(stickDir.copy().mul(stick.length / 2));
                 }
                 if (!stick.pointB.locked) {
-                    stick.pointB.position = stickCentre.clone().subtract(stickDir.clone().mul(stick.length / 2));
+                    stick.pointB.position = stickCentre.copy().subtract(stickDir.copy().mul(stick.length / 2));
                 }
             }
         }
@@ -82,9 +81,9 @@ public class Simulation {
         //noinspection ForLoopReplaceableByForEach
         for (int x = 0; x < sticks.size(); x++) {
             Stick stick = sticks.get(x);
-            Vector2 stickDir = stick.pointA.position.clone().subtract(stick.pointB.position).normalize();
+            Vector2 stickDir = stick.pointA.position.copy().subtract(stick.pointB.position).normalize();
             if (!stick.pointB.locked) {
-                stick.pointB.position = stick.pointA.position.clone().subtract(stickDir.mul(stick.length));
+                stick.pointB.position = stick.pointA.position.copy().subtract(stickDir.mul(stick.length));
             }
         }
     }
@@ -139,8 +138,7 @@ public class Simulation {
             this.y = y;
         }
 
-        @SuppressWarnings("MethodDoesntCallSuperMethod")
-        public Vector2 clone() {
+        public Vector2 copy() {
             return new Vector2(x, y);
         }
 

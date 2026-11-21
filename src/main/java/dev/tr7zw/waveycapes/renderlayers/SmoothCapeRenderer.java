@@ -16,16 +16,15 @@ import org.lwjgl.opengl.GL11;
 @SuppressWarnings("SameParameterValue")
 public class SmoothCapeRenderer {
 
-    public void renderSmoothCape(CustomCapeRenderLayer layer, PlayerEntity abstractClientPlayer, float delta,
-                                 boolean atVanillaCloakMatrix) {
+    public void renderSmoothCape(CustomCapeRenderLayer layer, PlayerEntity player, float delta, boolean undoTranslation) {
         Tessellator tessellator = Tessellator.INSTANCE;
         tessellator.startQuads();
-        PoseStack poseStack = atVanillaCloakMatrix ? PoseStack.fromGlModelView() : new PoseStack();
+        PoseStack poseStack = undoTranslation ? PoseStack.fromGlModelView() : new PoseStack();
         poseStack.pushPose();
         
         Matrix4f oldPositionMatrix = null;
         for (int part = 0; part < CustomCapeRenderLayer.partCount; part++) {
-            modifyPoseStack(layer, poseStack, abstractClientPlayer, delta, part, atVanillaCloakMatrix);
+            modifyPoseStack(layer, poseStack, player, delta, part, undoTranslation);
 
             if (oldPositionMatrix == null) {
                 oldPositionMatrix = poseStack.last().pose();
@@ -93,20 +92,18 @@ public class SmoothCapeRenderer {
         GL11.glPopMatrix();
     }
 
-    void modifyPoseStack(CustomCapeRenderLayer layer, PoseStack poseStack, PlayerEntity abstractClientPlayer, float h, int part,
-            boolean atVanillaCloakMatrix) {
+    void modifyPoseStack(CustomCapeRenderLayer layer, PoseStack poseStack, PlayerEntity player, float delta, int part, boolean undoTranslation) {
         if(WaveyCapes.config.capeMovement == CapeMovement.BASIC_SIMULATION) {
-            modifyPoseStackSimulation(layer, poseStack, abstractClientPlayer, h, part, atVanillaCloakMatrix);
+            modifyPoseStackSimulation(layer, poseStack, player, delta, part, undoTranslation);
             return;
         }
-        modifyPoseStackVanilla(layer, poseStack, abstractClientPlayer, h, part, atVanillaCloakMatrix);
+        modifyPoseStackVanilla(layer, poseStack, player, delta, part, undoTranslation);
     }
     
-    private void modifyPoseStackSimulation(CustomCapeRenderLayer layer, PoseStack poseStack, PlayerEntity abstractClientPlayer, float delta, int part,
-            boolean atVanillaCloakMatrix) {
-        Simulation simulation = ((PlayerImpl)abstractClientPlayer).waveycape_getSimulation();
+    private void modifyPoseStackSimulation(CustomCapeRenderLayer layer, PoseStack poseStack, PlayerEntity player, float delta, int part, boolean undoTranslation) {
+        Simulation simulation = ((PlayerImpl)player).waveycape_getSimulation();
         poseStack.pushPose();
-        if (!atVanillaCloakMatrix) {
+        if (!undoTranslation) {
             poseStack.translate(0.0D, 0.0D, 0.125D);
         }
         
@@ -125,14 +122,14 @@ public class SmoothCapeRenderer {
         partRotation *= 2F;
         
         float height = 0;
-        if (abstractClientPlayer.isSneaking()) {
+        if (player.isSneaking()) {
             height += 25.0F;
-            if (!atVanillaCloakMatrix) {
+            if (!undoTranslation) {
                 poseStack.translate(0, 0.15F, 0);
             }
         }
 
-        float naturalWindSwing = layer.getNatrualWindSwing(part);
+        float naturalWindSwing = layer.getNaturalWindSwing(part);
 
         
         // vanilla rotating and wind
@@ -151,19 +148,18 @@ public class SmoothCapeRenderer {
         
     }
     
-    private void modifyPoseStackVanilla(CustomCapeRenderLayer layer, PoseStack poseStack, PlayerEntity abstractClientPlayer, float h, int part,
-            boolean atVanillaCloakMatrix) {
+    private void modifyPoseStackVanilla(CustomCapeRenderLayer layer, PoseStack poseStack, PlayerEntity player, float delta, int part, boolean undoTranslation) {
         poseStack.pushPose();
-        if (!atVanillaCloakMatrix) {
+        if (!undoTranslation) {
             poseStack.translate(0.0D, 0.0D, 0.125D);
         }
-        double d = Mth.lerp(h, abstractClientPlayer.prevCapeX, abstractClientPlayer.capeX)
-                - Mth.lerp(h, abstractClientPlayer.prevX, abstractClientPlayer.x);
-        double e = Mth.lerp(h, abstractClientPlayer.prevCapeY, abstractClientPlayer.capeY)
-                - Mth.lerp(h, abstractClientPlayer.prevY, abstractClientPlayer.y);
-        double m = Mth.lerp(h, abstractClientPlayer.prevCapeZ, abstractClientPlayer.capeZ)
-                - Mth.lerp(h, abstractClientPlayer.prevZ, abstractClientPlayer.z);
-        float n = abstractClientPlayer.lastBodyYaw + abstractClientPlayer.bodyYaw - abstractClientPlayer.lastBodyYaw;
+        double d = Mth.lerp(delta, player.prevCapeX, player.capeX)
+                - Mth.lerp(delta, player.prevX, player.x);
+        double e = Mth.lerp(delta, player.prevCapeY, player.capeY)
+                - Mth.lerp(delta, player.prevY, player.y);
+        double m = Mth.lerp(delta, player.prevCapeZ, player.capeZ)
+                - Mth.lerp(delta, player.prevZ, player.z);
+        float n = player.lastBodyYaw + player.bodyYaw - player.lastBodyYaw;
         double o = Math.sin(n * 0.017453292F);
         double p = -Math.cos(n * 0.017453292F);
         float height = (float) e * 10.0F;
@@ -172,23 +168,23 @@ public class SmoothCapeRenderer {
         swing = Mth.clamp(swing, 0.0F, 150.0F * easeOutSine(1F/CustomCapeRenderLayer.partCount*part));
         float sidewaysRotationOffset = (float) (d * p - m * o) * 100.0F;
         sidewaysRotationOffset = Mth.clamp(sidewaysRotationOffset, -20.0F, 20.0F);
-        float t = Mth.lerp(h, abstractClientPlayer.prevStepBobbingAmount, abstractClientPlayer.stepBobbingAmount);
-        height += (float)Math.sin(Mth.lerp(h, abstractClientPlayer.prevHorizontalSpeed, abstractClientPlayer.horizontalSpeed) * 6.0F) * 32.0F * t;
-        if (abstractClientPlayer.isSneaking()) {
+        float t = Mth.lerp(delta, player.prevStepBobbingAmount, player.stepBobbingAmount);
+        height += (float)Math.sin(Mth.lerp(delta, player.prevHorizontalSpeed, player.horizontalSpeed) * 6.0F) * 32.0F * t;
+        if (player.isSneaking()) {
             height += 25.0F;
-            if (!atVanillaCloakMatrix) {
+            if (!undoTranslation) {
                 poseStack.translate(0, 0.15F, 0);
             }
         }
 
-        float naturalWindSwing = layer.getNatrualWindSwing(part);
+        float naturalWindSwing = layer.getNaturalWindSwing(part);
         
         poseStack.mulPose(Vector3f.XP.rotationDegrees(6.0F + swing / 2.0F + height + naturalWindSwing));
         poseStack.mulPose(Vector3f.ZP.rotationDegrees(sidewaysRotationOffset / 2.0F));
         poseStack.mulPose(Vector3f.YP.rotationDegrees(180.0F - sidewaysRotationOffset / 2.0F));
     }
     
-    private static void addBackVertex(Tessellator worldrenderer, Matrix4f matrix, Matrix4f oldMatrix, float x1, float y1, float z1, float x2, float y2, float z2, int part) {
+    private static void addBackVertex(Tessellator tess, Matrix4f matrix, Matrix4f oldMatrix, float x1, float y1, float z1, float x2, float y2, float z2, int part) {
         float i;
         Matrix4f k;
         if (x1 < x2) {
@@ -219,15 +215,15 @@ public class SmoothCapeRenderer {
         minV = minV + (vPerPart * part);
 
         //oldMatrix
-        vertexUVNormal(worldrenderer, oldMatrix, x1, y2, z1, maxU, minV, 1, 0, 0);
-        vertexUVNormal(worldrenderer, oldMatrix, x2, y2, z1, minU, minV, 1, 0, 0);
+        vertexUVNormal(tess, oldMatrix, x1, y2, z1, maxU, minV, 1, 0, 0);
+        vertexUVNormal(tess, oldMatrix, x2, y2, z1, minU, minV, 1, 0, 0);
         //matrix
-        vertexUVNormal(worldrenderer, matrix, x2, y1, z2, minU, maxV, 1, 0, 0);
-        vertexUVNormal(worldrenderer, matrix, x1, y1, z2, maxU, maxV, 1, 0, 0);
+        vertexUVNormal(tess, matrix, x2, y1, z2, minU, maxV, 1, 0, 0);
+        vertexUVNormal(tess, matrix, x1, y1, z2, maxU, maxV, 1, 0, 0);
         
    }
 
-    private static void addFrontVertex(Tessellator worldrenderer, Matrix4f matrix, Matrix4f oldMatrix, float x1, float y1, float z1, float x2, float y2, float z2, int part) {
+    private static void addFrontVertex(Tessellator tess, Matrix4f matrix, Matrix4f oldMatrix, float x1, float y1, float z1, float x2, float y2, float z2, int part) {
         float i;
         Matrix4f k;
         if (x1 < x2) {
@@ -258,15 +254,15 @@ public class SmoothCapeRenderer {
         minV = minV + (vPerPart * part);
 
         //oldMatrix
-        vertexUVNormal(worldrenderer, oldMatrix, x1, y1, z1, maxU, maxV, 1, 0, 0);
-        vertexUVNormal(worldrenderer, oldMatrix, x2, y1, z1, minU, maxV, 1, 0, 0);
+        vertexUVNormal(tess, oldMatrix, x1, y1, z1, maxU, maxV, 1, 0, 0);
+        vertexUVNormal(tess, oldMatrix, x2, y1, z1, minU, maxV, 1, 0, 0);
         //matrix
-        vertexUVNormal(worldrenderer, matrix, x2, y2, z2, minU, minV, 1, 0, 0);
-        vertexUVNormal(worldrenderer, matrix, x1, y2, z2, maxU, minV, 1, 0, 0);
+        vertexUVNormal(tess, matrix, x2, y2, z2, minU, minV, 1, 0, 0);
+        vertexUVNormal(tess, matrix, x1, y2, z2, maxU, minV, 1, 0, 0);
         
    }
 
-    private static void addLeftVertex(Tessellator worldrenderer, Matrix4f matrix, Matrix4f oldMatrix, float x1, float y1, float z1, float x2, float y2, float z2, int part) {
+    private static void addLeftVertex(Tessellator tess, Matrix4f matrix, Matrix4f oldMatrix, float x1, float y1, float z1, float x2, float y2, float z2, int part) {
         float i;
         if (x1 < x2) {
             i = x1;
@@ -291,15 +287,15 @@ public class SmoothCapeRenderer {
         minV = minV + (vPerPart * part);
 
         //matrix
-        vertexUVNormal(worldrenderer, matrix, x2, y1, z1, maxU, maxV, 1, 0, 0);
-        vertexUVNormal(worldrenderer, matrix, x2, y1, z2, minU, maxV, 1, 0, 0);
+        vertexUVNormal(tess, matrix, x2, y1, z1, maxU, maxV, 1, 0, 0);
+        vertexUVNormal(tess, matrix, x2, y1, z2, minU, maxV, 1, 0, 0);
         //oldMatrix
-        vertexUVNormal(worldrenderer, oldMatrix, x2, y2, z2, minU, minV, 1, 0, 0);
-        vertexUVNormal(worldrenderer, oldMatrix, x2, y2, z1, maxU, minV, 1, 0, 0);
+        vertexUVNormal(tess, oldMatrix, x2, y2, z2, minU, minV, 1, 0, 0);
+        vertexUVNormal(tess, oldMatrix, x2, y2, z1, maxU, minV, 1, 0, 0);
         
     }
 
-    private static void addRightVertex(Tessellator worldrenderer, Matrix4f matrix, Matrix4f oldMatrix, float x1, float y1, float z1, float x2, float y2, float z2, int part) {
+    private static void addRightVertex(Tessellator tess, Matrix4f matrix, Matrix4f oldMatrix, float x1, float y1, float z1, float x2, float y2, float z2, int part) {
         float i;
         if (x1 < x2) {
             i = x1;
@@ -324,15 +320,15 @@ public class SmoothCapeRenderer {
         minV = minV + (vPerPart * part);
 
         //matrix
-        vertexUVNormal(worldrenderer, matrix, x2, y1, z2, minU, maxV, 1, 0, 0);
-        vertexUVNormal(worldrenderer, matrix, x2, y1, z1, maxU, maxV, 1, 0, 0);
+        vertexUVNormal(tess, matrix, x2, y1, z2, minU, maxV, 1, 0, 0);
+        vertexUVNormal(tess, matrix, x2, y1, z1, maxU, maxV, 1, 0, 0);
         //oldMatrix
-        vertexUVNormal(worldrenderer, oldMatrix, x2, y2, z1, maxU, minV, 1, 0, 0);
-        vertexUVNormal(worldrenderer, oldMatrix, x2, y2, z2, minU, minV, 1, 0, 0);
+        vertexUVNormal(tess, oldMatrix, x2, y2, z1, maxU, minV, 1, 0, 0);
+        vertexUVNormal(tess, oldMatrix, x2, y2, z2, minU, minV, 1, 0, 0);
         
     }
 
-    private static void addBottomVertex(Tessellator worldrenderer, Matrix4f matrix, Matrix4f oldMatrix, float x1, float y1, float z1, float x2, float y2, float z2, int part) {
+    private static void addBottomVertex(Tessellator tess, Matrix4f matrix, Matrix4f oldMatrix, float x1, float y1, float z1, float x2, float y2, float z2, int part) {
         float i;
         if (x1 < x2) {
             i = x1;
@@ -358,22 +354,22 @@ public class SmoothCapeRenderer {
         minV = minV + (vPerPart * part);
 
         //oldMatrix
-        vertexUVNormal(worldrenderer, oldMatrix, x1, y2, z2, maxU, minV, 1, 0, 0);
-        vertexUVNormal(worldrenderer, oldMatrix, x2, y2, z2, minU, minV, 1, 0, 0);
+        vertexUVNormal(tess, oldMatrix, x1, y2, z2, maxU, minV, 1, 0, 0);
+        vertexUVNormal(tess, oldMatrix, x2, y2, z2, minU, minV, 1, 0, 0);
         //newMatrix
-        vertexUVNormal(worldrenderer, matrix, x2, y1, z1, minU, maxV, 1, 0, 0);
-        vertexUVNormal(worldrenderer, matrix, x1, y1, z1, maxU, maxV, 1, 0, 0);
+        vertexUVNormal(tess, matrix, x2, y1, z1, minU, maxV, 1, 0, 0);
+        vertexUVNormal(tess, matrix, x1, y1, z1, maxU, maxV, 1, 0, 0);
 
     }
 
-    private static void vertexUVNormal(Tessellator worldrenderer, Matrix4f matrix4f, float f, float g, float h, float u, float v, float nx, float ny, float nz) {
+    private static void vertexUVNormal(Tessellator tess, Matrix4f matrix4f, float f, float g, float h, float u, float v, float nx, float ny, float nz) {
         Vector4f vector4f = new Vector4f(f, g, h, 1.0F);
         vector4f.transform(matrix4f);
-        worldrenderer.normal(nx, ny, nz);
-        worldrenderer.vertex(vector4f.x(), vector4f.y(), vector4f.z(), u, v);
+        tess.normal(nx, ny, nz);
+        tess.vertex(vector4f.x(), vector4f.y(), vector4f.z(), u, v);
     }
     
-    private static void addTopVertex(Tessellator worldrenderer, Matrix4f matrix, Matrix4f oldMatrix, float x1, float y1, float z1, float x2, float y2, float z2, int part) {
+    private static void addTopVertex(Tessellator tess, Matrix4f matrix, Matrix4f oldMatrix, float x1, float y1, float z1, float x2, float y2, float z2, int part) {
         float i;
         if (x1 < x2) {
             i = x1;
@@ -399,11 +395,11 @@ public class SmoothCapeRenderer {
         minV = minV + (vPerPart * part);
 
         //oldMatrix
-        vertexUVNormal(worldrenderer, oldMatrix, x1, y2, z1, maxU, maxV, 0, 1, 0);
-        vertexUVNormal(worldrenderer, oldMatrix, x2, y2, z1, minU, maxV, 0, 1, 0);
+        vertexUVNormal(tess, oldMatrix, x1, y2, z1, maxU, maxV, 0, 1, 0);
+        vertexUVNormal(tess, oldMatrix, x2, y2, z1, minU, maxV, 0, 1, 0);
         //newMatrix
-        vertexUVNormal(worldrenderer, matrix, x2, y1, z2, minU, minV, 0, 1, 0);
-        vertexUVNormal(worldrenderer, matrix, x1, y1, z2, maxU, minV, 0, 1, 0);
+        vertexUVNormal(tess, matrix, x2, y1, z2, minU, minV, 0, 1, 0);
+        vertexUVNormal(tess, matrix, x1, y1, z2, maxU, minV, 0, 1, 0);
    }
 
     private static float easeOutSine(float x) {

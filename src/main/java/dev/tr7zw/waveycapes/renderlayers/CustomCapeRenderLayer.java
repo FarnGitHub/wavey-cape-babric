@@ -6,7 +6,6 @@ import dev.tr7zw.waveycapes.config.enums.WindMode;
 import dev.tr7zw.waveycapes.impl.PlayerImpl;
 import dev.tr7zw.waveycapes.sim.Simulation;
 import dev.tr7zw.waveycapes.util.Mth;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.entity.player.PlayerEntity;
 import org.lwjgl.opengl.GL11;
@@ -26,38 +25,38 @@ public class CustomCapeRenderLayer {
         }
     }
 
-    public void doRenderLayer(PlayerEntity abstractClientPlayer, float deltaTick, boolean atVanillaCloakMatrix) {
+    public void doRenderLayer(PlayerEntity player, float delta, boolean undoTranslation) {
 
         if(WaveyCapes.config.capeMovement == CapeMovement.BASIC_SIMULATION) {
-            PlayerImpl holder = (PlayerImpl) abstractClientPlayer;
-            holder.waveycape_updateSimulation(abstractClientPlayer, partCount);
+            PlayerImpl holder = (PlayerImpl) player;
+            holder.waveycape_updateSimulation(player, partCount);
         }
 
-        if (atVanillaCloakMatrix) {
-            undoVanillaCloakRotations(abstractClientPlayer, deltaTick);
+        if (undoTranslation) {
+            undoVanillaCloakRotations(player, delta);
         }
 
         if (WaveyCapes.config.capeStyle == CapeStyle.SMOOTH) {
-            smoothCapeRenderer.renderSmoothCape(this, abstractClientPlayer, deltaTick, atVanillaCloakMatrix);
+            smoothCapeRenderer.renderSmoothCape(this, player, delta, undoTranslation);
         } else {
             for (int part = 0; part < partCount; part++) {
                 ModelPart model = customCape[part];
                 GL11.glPushMatrix();
-                modifyPoseStack(abstractClientPlayer, deltaTick, part, atVanillaCloakMatrix);
+                modifyPoseStack(player, delta, part, undoTranslation);
                 model.render(0.0625F);
                 GL11.glPopMatrix();
             }
         }
     }
     
-    private void undoVanillaCloakRotations(PlayerEntity abstractClientPlayer, float h) {
-        double d = Mth.lerp(h, abstractClientPlayer.prevCapeX, abstractClientPlayer.capeX)
-                - Mth.lerp(h, abstractClientPlayer.prevX, abstractClientPlayer.x);
-        double e = Mth.lerp(h, abstractClientPlayer.prevCapeY, abstractClientPlayer.capeY)
-                - Mth.lerp(h, abstractClientPlayer.prevY, abstractClientPlayer.y);
-        double m = Mth.lerp(h, abstractClientPlayer.prevCapeZ, abstractClientPlayer.capeZ)
-                - Mth.lerp(h, abstractClientPlayer.prevZ, abstractClientPlayer.z);
-        float n = abstractClientPlayer.lastBodyYaw + abstractClientPlayer.bodyYaw - abstractClientPlayer.lastBodyYaw;
+    private void undoVanillaCloakRotations(PlayerEntity player, float delta) {
+        double d = Mth.lerp(delta, player.prevCapeX, player.capeX)
+                - Mth.lerp(delta, player.prevX, player.x);
+        double e = Mth.lerp(delta, player.prevCapeY, player.capeY)
+                - Mth.lerp(delta, player.prevY, player.y);
+        double m = Mth.lerp(delta, player.prevCapeZ, player.capeZ)
+                - Mth.lerp(delta, player.prevZ, player.z);
+        float n = player.lastBodyYaw + player.bodyYaw - player.lastBodyYaw;
         double o = Math.sin(n * 0.017453292F);
         double p = -Math.cos(n * 0.017453292F);
         float height = (float) e * 10.0F;
@@ -66,9 +65,9 @@ public class CustomCapeRenderLayer {
         swing = Mth.clamp(swing, 0.0F, 150.0F);
         float sidewaysRotationOffset = (float) (d * p - m * o) * 100.0F;
         sidewaysRotationOffset = Mth.clamp(sidewaysRotationOffset, -20.0F, 20.0F);
-        float t = Mth.lerp(h, abstractClientPlayer.prevStepBobbingAmount, abstractClientPlayer.stepBobbingAmount);
-        height += (float)Math.sin(Mth.lerp(h, abstractClientPlayer.prevHorizontalSpeed, abstractClientPlayer.horizontalSpeed) * 6.0F) * 32.0F * t;
-        if (abstractClientPlayer.isSneaking()) {
+        float t = Mth.lerp(delta, player.prevStepBobbingAmount, player.stepBobbingAmount);
+        height += (float)Math.sin(Mth.lerp(delta, player.prevHorizontalSpeed, player.horizontalSpeed) * 6.0F) * 32.0F * t;
+        if (player.isSneaking()) {
             height += 25.0F;
         }
 
@@ -78,18 +77,17 @@ public class CustomCapeRenderLayer {
         GL11.glRotatef(-(6.0F + swing / 2.0F + height), 1.0F, 0.0F, 0.0F);
     }
 
-    private void modifyPoseStack(PlayerEntity abstractClientPlayer, float h, int part, boolean atVanillaCloakMatrix) {
+    private void modifyPoseStack(PlayerEntity player, float delta, int part, boolean undoTranslation) {
         if(WaveyCapes.config.capeMovement == CapeMovement.BASIC_SIMULATION) {
-            modifyPoseStackSimulation(abstractClientPlayer, h, part, atVanillaCloakMatrix);
+            modifyPoseStackSimulation(player, delta, part, undoTranslation);
             return;
         }
-        modifyPoseStackVanilla(abstractClientPlayer, h, part, atVanillaCloakMatrix);
+        modifyPoseStackVanilla(player, delta, part, undoTranslation);
     }
     
-    private void modifyPoseStackSimulation(PlayerEntity abstractClientPlayer, float delta, int part,
-            boolean atVanillaCloakMatrix) {
-        Simulation simulation = ((PlayerImpl)abstractClientPlayer).waveycape_getSimulation();
-        if (!atVanillaCloakMatrix) {
+    private void modifyPoseStackSimulation(PlayerEntity player, float delta, int part, boolean undoTranslation) {
+        Simulation simulation = ((PlayerImpl)player).waveycape_getSimulation();
+        if (!undoTranslation) {
             GL11.glTranslated(0.0D, 0.0D, 0.125D);
         }
         
@@ -102,14 +100,14 @@ public class CustomCapeRenderLayer {
         float sidewaysRotationOffset = 0;
         
         float height = 0;
-        if (abstractClientPlayer.isSneaking()) {
+        if (player.isSneaking()) {
             height += 25.0F;
-            if (!atVanillaCloakMatrix) {
+            if (!undoTranslation) {
                 GL11.glTranslatef(0.0F, 0.15F, 0.0F);
             }
         }
 
-        float naturalWindSwing = getNatrualWindSwing(part);
+        float naturalWindSwing = getNaturalWindSwing(part);
 
         
         // vanilla rotating and wind
@@ -120,7 +118,7 @@ public class CustomCapeRenderLayer {
         GL11.glTranslated(0, y/partCount, z/partCount); // movement from the simulation
         //offsetting so the rotation is on the cape part
         //float offset = (float) (part * (16 / partCount))/16; // to fold the entire cape into one position for debugging
-        GL11.glTranslated(0, /*-offset*/ + (0.48/16) , - (0.48/16)); // (0.48/16)
+        GL11.glTranslated(0, /*-offset*/ (0.48/16) , - (0.48/16)); // (0.48/16)
         GL11.glTranslated(0, part * 1f/partCount, 0);
         //GL11.glRotatef(-partRotation, 1.0F, 0.0F, 0.0F);
         // undoing the rotation
@@ -157,7 +155,7 @@ public class CustomCapeRenderLayer {
             }
         }
 
-        float naturalWindSwing = getNatrualWindSwing(part);
+        float naturalWindSwing = getNaturalWindSwing(part);
         
         GL11.glRotatef(6.0F + swing / 2.0F + height + naturalWindSwing, 1.0F, 0.0F, 0.0F);
         GL11.glRotatef(sidewaysRotationOffset / 2.0F, 0.0F, 0.0F, 1.0F);
@@ -165,7 +163,7 @@ public class CustomCapeRenderLayer {
         GL11.glRotatef(180.0F, 0.0F, 1.0F, 0.0F);
     }
     
-    float getNatrualWindSwing(int part) {
+    float getNaturalWindSwing(int part) {
         if (WaveyCapes.config.windMode == WindMode.WAVES) {
             long highlightedPart = (System.currentTimeMillis() / 3) % 360;
             float relativePart = (float) (part + 1) / partCount;
