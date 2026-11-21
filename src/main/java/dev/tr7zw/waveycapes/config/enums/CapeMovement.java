@@ -9,17 +9,19 @@ import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 public enum CapeMovement {
-    VANILLA(null, null),
-    BASIC_SIMULATION(BasicSimulation::new, BasicSimulation.class),
-    BASIC_SIMULATION_3D(Basic3DSimulation::new, Basic3DSimulation.class),
-    DUNGEONS(DungeonsSimulation::new, DungeonsSimulation.class),;
+    VANILLA("Classic", null, null),
+    BASIC_SIMULATION("Simulation", BasicSimulation::new, BasicSimulation.class),
+    BASIC_SIMULATION_3D("Simulation V2", Basic3DSimulation::new, Basic3DSimulation.class),
+    DUNGEONS("Dungeons", DungeonsSimulation::new, DungeonsSimulation.class),;
 
     private final Supplier<Simulation> simulationCreator;
     public final Class<? extends Simulation> simulationClass;
+    public final String displayName;
 
-    CapeMovement(@Nullable Supplier<Simulation> simulation, @Nullable Class<? extends Simulation> simulationClass) {
+    CapeMovement(String displayName, @Nullable Supplier<Simulation> simulation, @Nullable Class<? extends Simulation> simulationClass) {
         this.simulationCreator = simulation;
         this.simulationClass = simulationClass;
+        this.displayName = displayName;
     }
 
     public Simulation createSimulation() {

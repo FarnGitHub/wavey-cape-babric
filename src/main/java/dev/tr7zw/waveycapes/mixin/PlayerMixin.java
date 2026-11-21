@@ -28,7 +28,7 @@ public class PlayerMixin implements PlayerImpl {
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void waveycape$tickLiving(CallbackInfo info) {
-        this.waveycape_checkInit();
+        this.waveycape_updateSimulation();
         this.waveycape_tick();
     }
     

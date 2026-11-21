@@ -14,7 +14,7 @@ public interface PlayerImpl {
 
     void waveycape_setSimulation(Simulation sim);
 
-    default void waveycape_checkInit() {
+    default void waveycape_updateSimulation() {
         Simulation simulation = waveycape_getSimulation();
 
         if (simulation == null || WaveyCapes.config.capeMovement.simulationClass != simulation.getClass()) {
@@ -24,11 +24,11 @@ public interface PlayerImpl {
 
         if (simulation != null && simulation.init(CapeRendererImpl.partCount)) {
             waveycape_getSimulation().applyMovement(1f, 1f, 0f);
-            for (int why = 0; why < 5; why++) { // quickly doing a few simulation steps to get the cape int a stable
-                // configuration
+            for (int why = 0; why < 5; why++) {
                 waveycape_tick();
             }
         }
+
     }
 
     default void waveycape_tick() {

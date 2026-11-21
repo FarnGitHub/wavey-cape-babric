@@ -13,7 +13,7 @@ public interface CapeRenderer {
     }
 
     static float getNaturalWindSwing(int part) {
-        if (WaveyCapes.config.windyCape) {
+        if (WaveyCapes.config.wavyCape) {
             long highlightedPart = (System.currentTimeMillis() / 3) % 360;
             float relativePart = (float) (part + 1) / CapeRendererImpl.partCount;
             return (float) (Math.sin(Math.toRadians((relativePart) * 360 - (highlightedPart))) * 3);

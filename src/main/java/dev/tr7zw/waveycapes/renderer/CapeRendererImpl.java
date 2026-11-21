@@ -21,9 +21,7 @@ public final class CapeRendererImpl {
     }
 
     public static void render(PlayerEntity player, float delta, boolean undoTranslation) {
-        if (undoTranslation) {
-            undoVanillaCloakRotations(player, delta);
-        }
+        if (undoTranslation) undoVanillaCloakRotations(player, delta);
         capeRenderer.render(player, delta, undoTranslation);
     }
 

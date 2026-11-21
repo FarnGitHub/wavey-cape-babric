@@ -2,7 +2,6 @@ package dev.tr7zw.waveycapes.renderer.cape;
 
 import dev.tr7zw.waveycapes.WaveyCapes;
 import dev.tr7zw.waveycapes.config.enums.CapeMovement;
-import dev.tr7zw.waveycapes.impl.PlayerImpl;
 import dev.tr7zw.waveycapes.renderer.CapeRendererImpl;
 import dev.tr7zw.waveycapes.sim.Simulation;
 import dev.tr7zw.waveycapes.util.Mth;
@@ -33,7 +32,7 @@ public class BlockyCapeRender implements CapeRenderer {
     }
 
     private void modifyPoseStack(PlayerEntity player, float delta, int part, boolean undoTranslation) {
-        if(WaveyCapes.config.capeMovement != CapeMovement.VANILLA) {
+        if(player.waveycape_getSimulation() != null) {
             modifyPoseStackSimulation(player, delta, part, undoTranslation);
             return;
         }
@@ -41,7 +40,7 @@ public class BlockyCapeRender implements CapeRenderer {
     }
 
     private void modifyPoseStackSimulation(PlayerEntity player, float delta, int part, boolean undoTranslation) {
-        Simulation simulation = ((PlayerImpl)player).waveycape_getSimulation();
+        Simulation simulation = player.waveycape_getSimulation();
         if (!undoTranslation) {
             GL11.glTranslated(0.0D, 0.0D, 0.125D);
         }

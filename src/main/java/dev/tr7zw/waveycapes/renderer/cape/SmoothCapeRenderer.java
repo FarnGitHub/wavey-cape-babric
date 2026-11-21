@@ -94,7 +94,7 @@ public class SmoothCapeRenderer implements CapeRenderer{
     }
 
     void modifyPoseStack(PoseStack stack, PlayerEntity player, float delta, int part, boolean undoTranslation) {
-        if(WaveyCapes.config.capeMovement != CapeMovement.VANILLA) {
+        if(player.waveycape_getSimulation() != null) {
             modifyPoseStackSimulation(stack, player, delta, part, undoTranslation);
             return;
         }
@@ -102,7 +102,7 @@ public class SmoothCapeRenderer implements CapeRenderer{
     }
 
     private void modifyPoseStackSimulation(PoseStack poseStack, PlayerEntity player, float delta, int part, boolean undoTranslation) {
-        Simulation simulation = ((PlayerImpl)player).waveycape_getSimulation();
+        Simulation simulation = player.waveycape_getSimulation();
         poseStack.pushPose();
         if (!undoTranslation) {
             poseStack.translate(0.0D, 0.0D, 0.125D);

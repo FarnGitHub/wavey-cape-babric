@@ -15,7 +15,6 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
-    withSourcesJar()
 }
 
 loom {
@@ -164,16 +163,6 @@ dependencies {
         }
     }
 
-    if (project.hasProperty("nyalib_version")) {
-        modImplementation("net.danygames2014:NyaLib:${project.nyalib_version}")
-    }
-
-    if (project.hasProperty("uniwrench_version")) {
-        modImplementation("net.danygames2014:UniWrench:${project.uniwrench_version}") {
-            transitive = false
-        }
-    }
-
     // Runtime-Only Mods
     if (project.hasProperty("debugutilities_version")) {
         modRuntimeOnly("net.danygames2014:DebugUtilities:${project.debugutilities_version}")
@@ -189,7 +178,6 @@ dependencies {
         transitive = false
     }
 
-    //modImplementation "maven.modrinth:mfzaZK3Z:ICfkvFVG"
 }
 
 processResources {
