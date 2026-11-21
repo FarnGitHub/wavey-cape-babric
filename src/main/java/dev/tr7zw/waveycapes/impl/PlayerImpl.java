@@ -1,12 +1,38 @@
 package dev.tr7zw.waveycapes.impl;
 
 import dev.tr7zw.waveycapes.WaveyCapes;
+;
 import dev.tr7zw.waveycapes.sim.Simulation;
+import dev.tr7zw.waveycapes.sim.Simulation.Point;
+import dev.tr7zw.waveycapes.sim.Simulation.Stick;
 import dev.tr7zw.waveycapes.util.Mth;
 import net.minecraft.entity.player.PlayerEntity;
 
 public interface PlayerImpl {
     Simulation waveycape_getSimulation();
+
+    default void waveycape_updateSimulation(PlayerEntity abstractClientPlayer, int partCount) {
+        Simulation simulation = waveycape_getSimulation();
+        boolean dirty = false;
+        if(simulation.points.size() != partCount) {
+            simulation.points.clear();
+            simulation.sticks.clear();
+            for (int i = 0; i < partCount; i++) {
+                Point point = new Point();
+                point.position.y = -i;
+                point.locked = i == 0;
+                simulation.points.add(point);
+                if(i > 0) {
+                    simulation.sticks.add(new Stick(simulation.points.get(i-1), point, 1f));
+                }
+            }
+            dirty = true;
+        }
+        if(dirty) {
+            for(int i = 0; i < 10; i++) // quickly doing a few simulation steps to get the cape int a stable configuration
+                waveycape_simulate(abstractClientPlayer);
+        }
+    }
 
     default void waveycape_simulate(PlayerEntity player) {
         Simulation simulation = waveycape_getSimulation();

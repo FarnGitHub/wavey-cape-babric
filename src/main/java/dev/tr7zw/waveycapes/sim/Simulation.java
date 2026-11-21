@@ -21,6 +21,7 @@ public class Simulation {
 
     public void simulate() {
         gravity = WaveyCapes.config.gravity;
+        //maxBend = WaveyCapesBase.config.maxBend;
 
         float deltaTime = 50f/1000f; // fixed timescale
         Vector2 down = new Vector2(0, gravity * deltaTime);
@@ -28,6 +29,7 @@ public class Simulation {
         for (Point p : points) {
             if (!p.locked) {
                 tmp.copy(p.position);
+                // p.position.add(p.position).subtract(p.prevPosition);
                 p.position.subtract(down);
                 p.prevPosition.copy(tmp);
             }
@@ -52,14 +54,13 @@ public class Simulation {
                 angle += 360;
             }
             double abs = Math.abs(angle);
-            float maxBend = 5;
-            if (abs < 180 - maxBend) {
+            if (abs < 180 - (float) 5) {
                 points.get(i + 1).position = getReplacement(points.get(i).position, points.get(i - 1).position, angle,
-                        180 - maxBend + 1);
+                        180 - (float) 5 + 1);
             }
-            if (abs > 180 + maxBend) {
+            if (abs > 180 + (float) 5) {
                 points.get(i + 1).position = getReplacement(points.get(i).position, points.get(i - 1).position, angle,
-                        180 + maxBend - 1);
+                        180 + (float) 5 - 1);
             }
         }
 
@@ -78,7 +79,9 @@ public class Simulation {
             }
         }
         // fix in the position/length, this prevents it from acting like a spring/stretchy
-        for (Stick stick : sticks) {
+        //noinspection ForLoopReplaceableByForEach
+        for (int x = 0; x < sticks.size(); x++) {
+            Stick stick = sticks.get(x);
             Vector2 stickDir = stick.pointA.position.clone().subtract(stick.pointB.position).normalize();
             if (!stick.pointB.locked) {
                 stick.pointB.position = stick.pointA.position.clone().subtract(stickDir.mul(stick.length));
@@ -136,12 +139,9 @@ public class Simulation {
             this.y = y;
         }
 
-        public Vector2 clone(){
-            try {
-                return (Vector2)super.clone();
-            } catch (CloneNotSupportedException e) {
-                return new Vector2(x, y);
-            }
+        @SuppressWarnings("MethodDoesntCallSuperMethod")
+        public Vector2 clone() {
+            return new Vector2(x, y);
         }
 
         public void copy(Vector2 vec) {

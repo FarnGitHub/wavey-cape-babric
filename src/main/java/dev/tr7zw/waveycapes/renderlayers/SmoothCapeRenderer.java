@@ -1,7 +1,8 @@
 package dev.tr7zw.waveycapes.renderlayers;
 
-import dev.tr7zw.waveycapes.impl.PlayerImpl;
 import dev.tr7zw.waveycapes.WaveyCapes;
+import dev.tr7zw.waveycapes.config.enums.CapeMovement;
+import dev.tr7zw.waveycapes.impl.PlayerImpl;
 import dev.tr7zw.waveycapes.sim.Simulation;
 import dev.tr7zw.waveycapes.util.Matrix4f;
 import dev.tr7zw.waveycapes.util.Mth;
@@ -11,8 +12,6 @@ import dev.tr7zw.waveycapes.util.Vector4f;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.entity.player.PlayerEntity;
 import org.lwjgl.opengl.GL11;
-
-import java.util.List;
 
 @SuppressWarnings("SameParameterValue")
 public class SmoothCapeRenderer {
@@ -94,7 +93,66 @@ public class SmoothCapeRenderer {
         GL11.glPopMatrix();
     }
 
-    void modifyPoseStack(CustomCapeRenderLayer layer, PoseStack poseStack, PlayerEntity abstractClientPlayer, float h, int part, boolean atVanillaCloakMatrix) {
+    void modifyPoseStack(CustomCapeRenderLayer layer, PoseStack poseStack, PlayerEntity abstractClientPlayer, float h, int part,
+            boolean atVanillaCloakMatrix) {
+        if(WaveyCapes.config.capeMovement == CapeMovement.BASIC_SIMULATION) {
+            modifyPoseStackSimulation(layer, poseStack, abstractClientPlayer, h, part, atVanillaCloakMatrix);
+            return;
+        }
+        modifyPoseStackVanilla(layer, poseStack, abstractClientPlayer, h, part, atVanillaCloakMatrix);
+    }
+    
+    private void modifyPoseStackSimulation(CustomCapeRenderLayer layer, PoseStack poseStack, PlayerEntity abstractClientPlayer, float delta, int part,
+            boolean atVanillaCloakMatrix) {
+        Simulation simulation = ((PlayerImpl)abstractClientPlayer).waveycape_getSimulation();
+        poseStack.pushPose();
+        if (!atVanillaCloakMatrix) {
+            poseStack.translate(0.0D, 0.0D, 0.125D);
+        }
+        
+        float z = simulation.points.get(part).getLerpX(delta) - simulation.points.get(0).getLerpX(delta);
+        if(z > 0) {
+            z = 0;
+        }
+        float y = simulation.points.get(0).getLerpY(delta) - part - simulation.points.get(part).getLerpY(delta);
+        
+        float sidewaysRotationOffset = 0;
+        float partRotation = (float) -Math.atan2(y, z);
+        partRotation = Math.max(partRotation, 0);
+        if(partRotation != 0)
+            partRotation = (float) (Math.PI-partRotation);
+        partRotation *= 57.2958F;
+        partRotation *= 2F;
+        
+        float height = 0;
+        if (abstractClientPlayer.isSneaking()) {
+            height += 25.0F;
+            if (!atVanillaCloakMatrix) {
+                poseStack.translate(0, 0.15F, 0);
+            }
+        }
+
+        float naturalWindSwing = layer.getNatrualWindSwing(part);
+
+        
+        // vanilla rotating and wind
+        poseStack.mulPose(Vector3f.XP.rotationDegrees(6.0F + height + naturalWindSwing));
+        poseStack.mulPose(Vector3f.ZP.rotationDegrees(sidewaysRotationOffset / 2.0F));
+        poseStack.mulPose(Vector3f.YP.rotationDegrees(180.0F - sidewaysRotationOffset / 2.0F));
+        poseStack.translate(0, y/CustomCapeRenderLayer.partCount, z/CustomCapeRenderLayer.partCount); // movement from the simulation
+        //offsetting so the rotation is on the cape part
+        //float offset = (float) (part * (16 / CustomCapeRenderLayer.partCount))/16; // to fold the entire cape into one position for debugging
+        poseStack.translate(0, /*-offset*/ (0.48/16) , - (0.48/16)); // (0.48/16)
+        poseStack.translate(0, part * 1f/CustomCapeRenderLayer.partCount, 0);
+        poseStack.mulPose(Vector3f.XP.rotationDegrees(-partRotation)); // apply actual rotation
+        // undoing the rotation
+        poseStack.translate(0, -part * 1f/CustomCapeRenderLayer.partCount, 0);
+        poseStack.translate(0, -(0.48/16), (0.48/16));
+        
+    }
+    
+    private void modifyPoseStackVanilla(CustomCapeRenderLayer layer, PoseStack poseStack, PlayerEntity abstractClientPlayer, float h, int part,
+            boolean atVanillaCloakMatrix) {
         poseStack.pushPose();
         if (!atVanillaCloakMatrix) {
             poseStack.translate(0.0D, 0.0D, 0.125D);
@@ -115,7 +173,7 @@ public class SmoothCapeRenderer {
         float sidewaysRotationOffset = (float) (d * p - m * o) * 100.0F;
         sidewaysRotationOffset = Mth.clamp(sidewaysRotationOffset, -20.0F, 20.0F);
         float t = Mth.lerp(h, abstractClientPlayer.prevStepBobbingAmount, abstractClientPlayer.stepBobbingAmount);
-        height = (float) (height + Math.sin(Mth.lerp(h, abstractClientPlayer.prevHorizontalSpeed, abstractClientPlayer.horizontalSpeed) * 6.0F) * 32.0F * t);
+        height += (float)Math.sin(Mth.lerp(h, abstractClientPlayer.prevHorizontalSpeed, abstractClientPlayer.horizontalSpeed) * 6.0F) * 32.0F * t;
         if (abstractClientPlayer.isSneaking()) {
             height += 25.0F;
             if (!atVanillaCloakMatrix) {
@@ -123,7 +181,7 @@ public class SmoothCapeRenderer {
             }
         }
 
-        float naturalWindSwing = layer.getNaturalWindSwing(part);
+        float naturalWindSwing = layer.getNatrualWindSwing(part);
         
         poseStack.mulPose(Vector3f.XP.rotationDegrees(6.0F + swing / 2.0F + height + naturalWindSwing));
         poseStack.mulPose(Vector3f.ZP.rotationDegrees(sidewaysRotationOffset / 2.0F));
@@ -350,6 +408,6 @@ public class SmoothCapeRenderer {
 
     private static float easeOutSine(float x) {
         return (float) Math.sin((x * Math.PI) / 2f);
-    }
+      }
     
 }
