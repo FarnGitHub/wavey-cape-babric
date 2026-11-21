@@ -1,5 +1,8 @@
-package dev.tr7zw.waveycapes.util;
+package dev.tr7zw.waveycapes.util.vector;
 
+import dev.tr7zw.waveycapes.util.Mth;
+
+@SuppressWarnings("unused")
 public final class Quaternion {
     public static final Quaternion ONE = new Quaternion(0.0F, 0.0F, 0.0F, 1.0F);
 
@@ -18,7 +21,7 @@ public final class Quaternion {
         this.r = i;
     }
 
-    public Quaternion(Vector3f vector3f, float f, boolean bl) {
+    public Quaternion(Vector3 vector3f, float f, boolean bl) {
         if (bl)
             f *= 0.017453292F;
         float g = sin(f / 2.0F);
@@ -61,12 +64,12 @@ public final class Quaternion {
         return quaternion;
     }
 
-    public static Quaternion fromXYZDegrees(Vector3f vector3f) {
+    public static Quaternion fromXYZDegrees(Vector3 vector3f) {
         return fromXYZ((float) Math.toRadians(vector3f.x()), (float) Math.toRadians(vector3f.y()),
                 (float) Math.toRadians(vector3f.z()));
     }
 
-    public static Quaternion fromXYZ(Vector3f vector3f) {
+    public static Quaternion fromXYZ(Vector3 vector3f) {
         return fromXYZ(vector3f.x(), vector3f.y(), vector3f.z());
     }
 
@@ -78,7 +81,7 @@ public final class Quaternion {
         return quaternion;
     }
 
-    public Vector3f toXYZ() {
+    public Vector3 toXYZ() {
         float f = r() * r();
         float g = i() * i();
         float h = j() * j();
@@ -87,19 +90,19 @@ public final class Quaternion {
         float k = 2.0F * r() * i() - 2.0F * j() * k();
         float l = (float) Math.asin((k / j));
         if (Math.abs(k) > 0.999F * j)
-            return new Vector3f(2.0F * (float) Math.atan2(i(), r()), l, 0.0F);
-        return new Vector3f((float) Math.atan2((2.0F * j() * k() + 2.0F * i() * r()), (f - g - h + i)), l,
+            return new Vector3(2.0F * (float) Math.atan2(i(), r()), l, 0.0F);
+        return new Vector3((float) Math.atan2((2.0F * j() * k() + 2.0F * i() * r()), (f - g - h + i)), l,
 
                 (float) Math.atan2((2.0F * i() * j() + 2.0F * r() * k()), (f + g - h - i)));
     }
 
-    public Vector3f toXYZDegrees() {
-        Vector3f vector3f = toXYZ();
-        return new Vector3f((float) Math.toDegrees(vector3f.x()), (float) Math.toDegrees(vector3f.y()),
+    public Vector3 toXYZDegrees() {
+        Vector3 vector3f = toXYZ();
+        return new Vector3((float) Math.toDegrees(vector3f.x()), (float) Math.toDegrees(vector3f.y()),
                 (float) Math.toDegrees(vector3f.z()));
     }
 
-    public Vector3f toYXZ() {
+    public Vector3 toYXZ() {
         float f = r() * r();
         float g = i() * i();
         float h = j() * j();
@@ -108,18 +111,18 @@ public final class Quaternion {
         float k = 2.0F * r() * i() - 2.0F * j() * k();
         float l = (float) Math.asin((k / j));
         if (Math.abs(k) > 0.999F * j)
-            return new Vector3f(l, 2.0F *
+            return new Vector3(l, 2.0F *
 
                     (float) Math.atan2(j(), r()), 0.0F);
-        return new Vector3f(l,
+        return new Vector3(l,
 
                 (float) Math.atan2((2.0F * i() * k() + 2.0F * j() * r()), (f - g - h + i)),
                 (float) Math.atan2((2.0F * i() * j() + 2.0F * r() * k()), (f - g + h - i)));
     }
 
-    public Vector3f toYXZDegrees() {
-        Vector3f vector3f = toYXZ();
-        return new Vector3f((float) Math.toDegrees(vector3f.x()), (float) Math.toDegrees(vector3f.y()),
+    public Vector3 toYXZDegrees() {
+        Vector3 vector3f = toYXZ();
+        return new Vector3((float) Math.toDegrees(vector3f.x()), (float) Math.toDegrees(vector3f.y()),
                 (float) Math.toDegrees(vector3f.z()));
     }
 
@@ -147,12 +150,7 @@ public final class Quaternion {
     }
 
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Quaternion[").append(r()).append(" + ");
-        stringBuilder.append(i()).append("i + ");
-        stringBuilder.append(j()).append("j + ");
-        stringBuilder.append(k()).append("k]");
-        return stringBuilder.toString();
+        return String.format("Quaternion[%s + %si + %sj + %sk]", r(), i(), j(), k());
     }
 
     public float i() {

@@ -17,6 +17,9 @@
     ],
     "gcapi3": [
       "dev.tr7zw.waveycapes.WaveyCapes"
+    ],
+    "gcapi3:presave": [
+      "dev.tr7zw.waveycapes.WaveyCapes"
     ]
   },
   "mixins": [

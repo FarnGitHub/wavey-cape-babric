@@ -1,21 +1,25 @@
-package dev.tr7zw.waveycapes.util;
+package dev.tr7zw.waveycapes.util.cape;
 
 import java.nio.FloatBuffer;
+import java.util.ArrayDeque;
 import java.util.Deque;
 
+import dev.tr7zw.waveycapes.util.Mth;
+import dev.tr7zw.waveycapes.util.matrix.Matrix3;
+import dev.tr7zw.waveycapes.util.matrix.Matrix4;
+import dev.tr7zw.waveycapes.util.vector.Quaternion;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
-import com.google.common.collect.Queues;
-
+@SuppressWarnings("unused")
 public class PoseStack {
     private final Deque<Pose> poseStack;
 
     public PoseStack() {
-        this.poseStack = Queues.newArrayDeque();
-        Matrix4f matrix4f = new Matrix4f();
+        this.poseStack = new ArrayDeque<>();
+        Matrix4 matrix4f = new Matrix4();
         matrix4f.setIdentity();
-        Matrix3f matrix3f = new Matrix3f();
+        Matrix3 matrix3f = new Matrix3();
         matrix3f.setIdentity();
         poseStack.add(new Pose(matrix4f, matrix3f));
     }
@@ -25,9 +29,9 @@ public class PoseStack {
         poseStack.poseStack.clear();
         FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
         GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, buffer);
-        Matrix4f matrix4f = new Matrix4f();
+        Matrix4 matrix4f = new Matrix4();
         matrix4f.load(buffer);
-        Matrix3f matrix3f = new Matrix3f();
+        Matrix3 matrix3f = new Matrix3();
         matrix3f.setIdentity();
         poseStack.poseStack.add(new Pose(matrix4f, matrix3f));
         return poseStack;
@@ -40,7 +44,7 @@ public class PoseStack {
 
     public void scale(float f, float g, float h) {
         Pose pose = this.poseStack.getLast();
-        pose.pose.multiply(Matrix4f.createScaleMatrix(f, g, h));
+        pose.pose.multiply(Matrix4.createScaleMatrix(f, g, h));
         if (f == g && g == h) {
             if (f > 0.0F)
                 return;
@@ -50,7 +54,7 @@ public class PoseStack {
         float j = 1.0F / g;
         float k = 1.0F / h;
         float l = Mth.fastInvCubeRoot(i * j * k);
-        pose.normal.mul(Matrix3f.createScaleMatrix(l * i, l * j, l * k));
+        pose.normal.mul(Matrix3.createScaleMatrix(l * i, l * j, l * k));
     }
 
     public void mulPose(Quaternion quaternion) {
@@ -82,25 +86,25 @@ public class PoseStack {
         pose.normal.setIdentity();
     }
 
-    public void mulPoseMatrix(Matrix4f matrix4f) {
-        ((Pose) this.poseStack.getLast()).pose.multiply(matrix4f);
+    public void mulPoseMatrix(Matrix4 matrix4f) {
+        this.poseStack.getLast().pose.multiply(matrix4f);
     }
 
     public static final class Pose {
-        final Matrix4f pose;
+        final Matrix4 pose;
 
-        final Matrix3f normal;
+        final Matrix3 normal;
 
-        Pose(Matrix4f matrix4f, Matrix3f matrix3f) {
+        Pose(Matrix4 matrix4f, Matrix3 matrix3f) {
             this.pose = matrix4f;
             this.normal = matrix3f;
         }
 
-        public Matrix4f pose() {
+        public Matrix4 pose() {
             return this.pose;
         }
 
-        public Matrix3f normal() {
+        public Matrix3 normal() {
             return this.normal;
         }
     }

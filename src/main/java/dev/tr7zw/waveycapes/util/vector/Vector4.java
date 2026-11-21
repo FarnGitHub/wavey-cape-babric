@@ -1,15 +1,19 @@
-package dev.tr7zw.waveycapes.util;
+package dev.tr7zw.waveycapes.util.vector;
 
-public class Vector4f {
+import dev.tr7zw.waveycapes.util.Mth;
+import dev.tr7zw.waveycapes.util.matrix.Matrix4;
+
+@SuppressWarnings("unused")
+public class Vector4 {
     private float x;
     private float y;
     private float z;
     private float w;
 
-    public Vector4f() {
+    public Vector4() {
     }
 
-    public Vector4f(float f, float g, float h, float i) {
+    public Vector4(float f, float g, float h, float i) {
         this.x = f;
         this.y = g;
         this.z = h;
@@ -21,7 +25,7 @@ public class Vector4f {
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        Vector4f vector4f = (Vector4f) object;
+        Vector4 vector4f = (Vector4) object;
         if (Float.compare(vector4f.x, this.x) != 0)
             return false;
         if (Float.compare(vector4f.y, this.y) != 0)
@@ -76,7 +80,7 @@ public class Vector4f {
         this.w += i;
     }
 
-    public float dot(Vector4f vector4f) {
+    public float dot(Vector4 vector4f) {
         return this.x * vector4f.x + this.y * vector4f.y + this.z * vector4f.z + this.w * vector4f.w;
     }
 
@@ -92,7 +96,7 @@ public class Vector4f {
         return true;
     }
 
-    public void transform(Matrix4f matrix4f) {
+    public void transform(Matrix4 matrix4f) {
         float f = this.x;
         float g = this.y;
         float h = this.z;
@@ -119,7 +123,7 @@ public class Vector4f {
         this.w = 1.0F;
     }
 
-    public void lerp(Vector4f vector4f, float f) {
+    public void lerp(Vector4 vector4f, float f) {
         float g = 1.0F - f;
         this.x = this.x * g + vector4f.x * f;
         this.y = this.y * g + vector4f.y * f;
@@ -128,6 +132,6 @@ public class Vector4f {
     }
 
     public String toString() {
-        return "[" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + "]";
+        return String.format("[%s, %s, %s, %s]", this.x, this.y, this.z, this.w);
     }
 }

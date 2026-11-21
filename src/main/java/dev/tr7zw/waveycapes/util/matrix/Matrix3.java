@@ -1,8 +1,11 @@
-package dev.tr7zw.waveycapes.util;
+package dev.tr7zw.waveycapes.util.matrix;
+
+import dev.tr7zw.waveycapes.util.vector.Quaternion;
 
 import java.nio.FloatBuffer;
 
-public final class Matrix3f {
+@SuppressWarnings("unused")
+public final class Matrix3 {
 
     private float m00;
 
@@ -22,10 +25,10 @@ public final class Matrix3f {
 
     private float m22;
 
-    public Matrix3f() {
+    public Matrix3() {
     }
 
-    public Matrix3f(Quaternion quaternion) {
+    public Matrix3(Quaternion quaternion) {
         float f = quaternion.i();
         float g = quaternion.j();
         float h = quaternion.k();
@@ -50,15 +53,15 @@ public final class Matrix3f {
         this.m12 = 2.0F * (n - p);
     }
 
-    public static Matrix3f createScaleMatrix(float f, float g, float h) {
-        Matrix3f matrix3f = new Matrix3f();
+    public static Matrix3 createScaleMatrix(float f, float g, float h) {
+        Matrix3 matrix3f = new Matrix3();
         matrix3f.m00 = f;
         matrix3f.m11 = g;
         matrix3f.m22 = h;
         return matrix3f;
     }
 
-    public Matrix3f(Matrix4f matrix4f) {
+    public Matrix3(Matrix4 matrix4f) {
         this.m00 = matrix4f.m00;
         this.m01 = matrix4f.m01;
         this.m02 = matrix4f.m02;
@@ -70,7 +73,7 @@ public final class Matrix3f {
         this.m22 = matrix4f.m22;
     }
 
-    public Matrix3f(Matrix3f matrix3f) {
+    public Matrix3(Matrix3 matrix3f) {
         this.m00 = matrix3f.m00;
         this.m01 = matrix3f.m01;
         this.m02 = matrix3f.m02;
@@ -99,7 +102,7 @@ public final class Matrix3f {
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        Matrix3f matrix3f = (Matrix3f) object;
+        Matrix3 matrix3f = (Matrix3) object;
         return (Float.compare(matrix3f.m00, this.m00) == 0 && Float.compare(matrix3f.m01, this.m01) == 0
                 && Float.compare(matrix3f.m02, this.m02) == 0 && Float.compare(matrix3f.m10, this.m10) == 0
                 && Float.compare(matrix3f.m11, this.m11) == 0 && Float.compare(matrix3f.m12, this.m12) == 0
@@ -156,7 +159,7 @@ public final class Matrix3f {
         }
     }
 
-    public void load(Matrix3f matrix3f) {
+    public void load(Matrix3 matrix3f) {
         this.m00 = matrix3f.m00;
         this.m01 = matrix3f.m01;
         this.m02 = matrix3f.m02;
@@ -169,27 +172,7 @@ public final class Matrix3f {
     }
 
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Matrix3f:\n");
-        stringBuilder.append(this.m00);
-        stringBuilder.append(" ");
-        stringBuilder.append(this.m01);
-        stringBuilder.append(" ");
-        stringBuilder.append(this.m02);
-        stringBuilder.append("\n");
-        stringBuilder.append(this.m10);
-        stringBuilder.append(" ");
-        stringBuilder.append(this.m11);
-        stringBuilder.append(" ");
-        stringBuilder.append(this.m12);
-        stringBuilder.append("\n");
-        stringBuilder.append(this.m20);
-        stringBuilder.append(" ");
-        stringBuilder.append(this.m21);
-        stringBuilder.append(" ");
-        stringBuilder.append(this.m22);
-        stringBuilder.append("\n");
-        return stringBuilder.toString();
+        return String.format("Matrix3f:\n%s %s %s\n%s %s %s\n%s %s %s\n", this.m00, this.m01, this.m02, this.m10, this.m11, this.m12, this.m20, this.m21, this.m22);
     }
 
     public void store(FloatBuffer floatBuffer) {
@@ -301,7 +284,7 @@ public final class Matrix3f {
         }
     }
 
-    public void mul(Matrix3f matrix3f) {
+    public void mul(Matrix3 matrix3f) {
         float f = this.m00 * matrix3f.m00 + this.m01 * matrix3f.m10 + this.m02 * matrix3f.m20;
         float g = this.m00 * matrix3f.m01 + this.m01 * matrix3f.m11 + this.m02 * matrix3f.m21;
         float h = this.m00 * matrix3f.m02 + this.m01 * matrix3f.m12 + this.m02 * matrix3f.m22;
@@ -323,7 +306,7 @@ public final class Matrix3f {
     }
 
     public void mul(Quaternion quaternion) {
-        mul(new Matrix3f(quaternion));
+        mul(new Matrix3(quaternion));
     }
 
     public void mul(float f) {
@@ -338,7 +321,7 @@ public final class Matrix3f {
         this.m22 *= f;
     }
 
-    public void add(Matrix3f matrix3f) {
+    public void add(Matrix3 matrix3f) {
         this.m00 += matrix3f.m00;
         this.m01 += matrix3f.m01;
         this.m02 += matrix3f.m02;
@@ -350,7 +333,7 @@ public final class Matrix3f {
         this.m22 += matrix3f.m22;
     }
 
-    public void sub(Matrix3f matrix3f) {
+    public void sub(Matrix3 matrix3f) {
         this.m00 -= matrix3f.m00;
         this.m01 -= matrix3f.m01;
         this.m02 -= matrix3f.m02;
@@ -366,7 +349,7 @@ public final class Matrix3f {
         return this.m00 + this.m11 + this.m22;
     }
 
-    public Matrix3f copy() {
-        return new Matrix3f(this);
+    public Matrix3 copy() {
+        return new Matrix3(this);
     }
 }

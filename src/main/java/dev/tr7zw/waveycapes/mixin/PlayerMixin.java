@@ -14,16 +14,22 @@ import dev.tr7zw.waveycapes.sim.Simulation;
 public class PlayerMixin implements PlayerImpl {
 
     @Unique
-    private Simulation waveycape_stickSimulation = new Simulation();
-    
+    private Simulation waveycape_simulation;
+
     @Override
     public Simulation waveycape_getSimulation() {
-        return waveycape_stickSimulation;
+        return waveycape_simulation;
     }
 
-    @Inject(method = "tickLiving", at = @At("HEAD"))
-    private void moveCloakUpdate(CallbackInfo info) {
-        waveycape_simulate((PlayerEntity)(Object)this);
+    @Override
+    public void waveycape_setSimulation(Simulation sim) {
+        this.waveycape_simulation = sim;
+    }
+
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void waveycape$tickLiving(CallbackInfo info) {
+        this.waveycape_checkInit();
+        this.waveycape_tick();
     }
     
 }

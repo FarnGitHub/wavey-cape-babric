@@ -1,17 +1,15 @@
 package dev.tr7zw.waveycapes.config;
 
 import dev.tr7zw.waveycapes.config.enums.CapeMovement;
-import dev.tr7zw.waveycapes.config.enums.CapeStyle;
-import dev.tr7zw.waveycapes.config.enums.WindMode;
 import net.glasslauncher.mods.gcapi3.api.ConfigEntry;
 
 public class Config {
 
-    @ConfigEntry(name="Wind Mode")
-    public WindMode windMode = WindMode.NONE;
+    @ConfigEntry(name="Windy Cape")
+    public Boolean windyCape = false;
 
-    @ConfigEntry(name="Style")
-    public CapeStyle capeStyle = CapeStyle.SMOOTH;
+    @ConfigEntry(name="Blocky Cape")
+    public Boolean blockyCape = false;
 
     @ConfigEntry(name="Movement")
     public CapeMovement capeMovement = CapeMovement.BASIC_SIMULATION;
