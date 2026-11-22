@@ -1,22 +1,67 @@
 package dev.tr7zw.waveycapes.config;
 
 import dev.tr7zw.waveycapes.config.enums.CapeMovement;
-import net.glasslauncher.mods.gcapi3.api.ConfigEntry;
+import net.fabricmc.loader.api.FabricLoader;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.PrintWriter;
 
 public class Config {
 
-    @ConfigEntry(name="Wavy Cape", description = "Add extra movement to the cape.")
-    public Boolean wavyCape = false;
+    public static final File file = FabricLoader.getInstance().getConfigDir().resolve("waveycapes.properties").toFile();
 
-    @ConfigEntry(name="Blocky Style Cape", description = "Change the render from a smoothly bending cape to a blocky style")
-    public Boolean blockyCape = false;
+    public boolean wavyCape = false;
+    public boolean blockyCape = false;
+    public CapeMovement capeMovement = CapeMovement.BASIC_SIMULATION_3D;
+    public int gravity = 25;
+    public int heightMultiplier = 6;
 
-    @ConfigEntry(name="Cape Movement", description = "Change the way the cape behaves.")
-    public CapeMovement capeMovement = CapeMovement.BASIC_SIMULATION;
+    public void save() {
+        try(PrintWriter writer = new PrintWriter(file)) {
+            writer.println("wavyCape=" + wavyCape);
+            writer.println("blockyCape=" + blockyCape);
+            writer.println("capeMovement=" + capeMovement);
+            writer.println("gravity=" + gravity);
+            writer.println("heightMultiplier=" + heightMultiplier);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-    @ConfigEntry(name="Gravity", description = "Change the amount of gravity applied to the cape.", maxValue = Integer.MAX_VALUE)
-    public Integer gravity = 25;
+    public Config() {
+        try(BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while((line = reader.readLine()) != null) {
+                String[] splited = line.split("=");
+                switch(splited[0]) {
+                    case "wavyCape": {
+                        wavyCape = splited[1].equals("true");
+                        break;
+                    }
+                    case "blockyCape": {
+                        blockyCape = splited[1].equals("true");
+                        break;
+                    }
+                    case "capeMovement": {
+                        capeMovement = CapeMovement.valueOf(splited[1].toUpperCase());
+                        break;
+                    }
+                    case "gravity": {
+                        gravity = Integer.parseInt(splited[1]);
+                        break;
+                    }
+                    case "heightMultiplier": {
+                        heightMultiplier = Integer.parseInt(splited[1]);
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-    @ConfigEntry(name="Height Multiplier", description = "Change how extreme the cape reacts to Y movement.", maxValue = Integer.MAX_VALUE)
-    public Integer heightMultiplier = 6;
+
 }

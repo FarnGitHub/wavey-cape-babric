@@ -2,7 +2,7 @@ package dev.tr7zw.waveycapes.impl;
 
 import dev.tr7zw.waveycapes.WaveyCapes;
 
-import dev.tr7zw.waveycapes.renderer.CapeRendererImpl;
+import dev.tr7zw.waveycapes.renderer.CapeRendererDelegate;
 import dev.tr7zw.waveycapes.sim.Simulation;
 import dev.tr7zw.waveycapes.util.Mth;
 import net.minecraft.block.material.Material;
@@ -22,7 +22,7 @@ public interface PlayerImpl {
             waveycape_setSimulation(simulation);
         }
 
-        if (simulation != null && simulation.init(CapeRendererImpl.partCount)) {
+        if (simulation != null && simulation.init(CapeRendererDelegate.partCount)) {
             waveycape_getSimulation().applyMovement(1f, 1f, 0f);
             for (int why = 0; why < 5; why++) {
                 waveycape_tick();
@@ -55,11 +55,13 @@ public interface PlayerImpl {
         } else {
             simulation.setGravity(WaveyCapes.config.gravity);
         }
+        boolean isSneaking = player.isSneaking() && !simulation.isSneaking();
         float yaw = (float) Math.toRadians(-player.yaw);
         float strave = MathHelper.cos(yaw) * (float) (player.x - player.prevX) - MathHelper.sin(yaw) * (float) (player.z - player.prevZ);
-        float changeX = (d * o + m * p) + fallHack;
-        float changeY = (float) ((player.y - player.prevY)*heightMul + (player.isSneaking() ? -4 : 0));
+        float changeX = (d * o + m * p) + fallHack + (isSneaking ? 3 : 0);
+        float changeY = (float) ((player.y - player.prevY)*heightMul + (isSneaking ? 1 : 0));
         float changeZ = -strave * 2;
+        simulation.setSneaking(player.isSneaking());
         simulation.setGravityDirection(0f, -1f, 0f);
         simulation.applyMovement(changeX, changeY, changeZ);
         simulation.simulate();

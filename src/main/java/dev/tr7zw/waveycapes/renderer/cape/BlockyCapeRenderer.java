@@ -1,32 +1,33 @@
 package dev.tr7zw.waveycapes.renderer.cape;
 
-import dev.tr7zw.waveycapes.WaveyCapes;
-import dev.tr7zw.waveycapes.config.enums.CapeMovement;
-import dev.tr7zw.waveycapes.renderer.CapeRendererImpl;
 import dev.tr7zw.waveycapes.sim.Simulation;
 import dev.tr7zw.waveycapes.util.Mth;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.entity.player.PlayerEntity;
 import org.lwjgl.opengl.GL11;
 
-public class BlockyCapeRender implements CapeRenderer {
-    private final ModelPart[] customCape = new ModelPart[CapeRendererImpl.partCount];
+public class BlockyCapeRenderer implements CapeRenderer {
+    private final ModelPart[] customCape = new ModelPart[partCount];
 
-    public BlockyCapeRender() {
-        for (int i = 0; i < customCape.length; i++) {
-            ModelPart base = new ModelPart(0, i);
-            base.addCuboid(-5.0F, (float)i, -1.0F, 10, 1, 1);
-            this.customCape[i] = base;
+    public BlockyCapeRenderer() {
+        for (int v = 0; v < customCape.length; v++) {
+            ModelPart base = new ModelPart(0, v);
+            base.addCuboid(-5.0F, (float)v, -1.0F, 10, 1, 1);
+            this.customCape[v] = base;
         }
     }
 
     @Override
-    public void render(PlayerEntity player, float delta, boolean undoTranslation) {
+    public void render(PlayerEntity player, float delta, float scale, boolean undoTranslation) {
+        if(undoTranslation) {
+            CapeRenderer.undoVanillaCloakRotations(player, delta);
+        }
+
         for (int part = 0; part < customCape.length; part++) {
             ModelPart model = customCape[part];
             GL11.glPushMatrix();
             modifyPoseStack(player, delta, part, undoTranslation);
-            model.render(0.0625F);
+            model.render(scale);
             GL11.glPopMatrix();
         }
     }
@@ -57,8 +58,7 @@ public class BlockyCapeRender implements CapeRenderer {
         partRotation = Math.max(partRotation, 0);
         if(partRotation != 0)
             partRotation = (float) (Math.PI-partRotation);
-        partRotation *= 57.2958F;
-        partRotation *= 2F;
+        partRotation *= 114.5916F;
 
         float height = 0;
         if (player.isSneaking()) {
@@ -68,18 +68,19 @@ public class BlockyCapeRender implements CapeRenderer {
             }
         }
 
-        float naturalWindSwing = CapeRenderer.getNaturalWindSwing(part);
-
-        GL11.glRotatef(6.0F + height + naturalWindSwing, 1.0F, 0.0F, 0.0F);
+        height += CapeRenderer.getNaturalWindSwing(part);
+        float offset = 0.48f / 16f;
+        float partOffset = part * 1f/customCape.length;
+        GL11.glRotatef(6.0F + height, 1.0F, 0.0F, 0.0F);
         GL11.glRotatef(sidewaysRotationOffset / 2.0F, 0.0F, 0.0F, 1.0F);
         GL11.glRotatef(-sidewaysRotationOffset / 2.0F, 0.0F, 1.0F, 0.0F);
         GL11.glRotatef(180.0F, 0.0F, 1.0F, 0.0F);
         GL11.glTranslated(x/customCape.length, y/customCape.length, z/customCape.length); // movement from the simulation
-        GL11.glTranslated(0, (0.48/16) , - (0.48/16)); // (0.48/16)
-        GL11.glTranslated(0, part * 1f/customCape.length, 0);
+        GL11.glTranslated(0, offset , -offset);
+        GL11.glTranslated(0, partOffset, 0);
         GL11.glRotatef(-partRotation, 1.0F, 0.0F, 0.0F);
-        GL11.glTranslated(0, -part * 1f/customCape.length, 0);
-        GL11.glTranslated(0, -(0.48/16), (0.48/16));
+        GL11.glTranslated(0, -partOffset, 0);
+        GL11.glTranslated(0, -offset, offset);
     }
 
     private void modifyPoseStackVanilla(PlayerEntity abstractClientPlayer, float h, int part, boolean atVanillaCloakMatrix) {

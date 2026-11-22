@@ -1,9 +1,5 @@
 package dev.tr7zw.waveycapes.renderer.cape;
 
-import dev.tr7zw.waveycapes.WaveyCapes;
-import dev.tr7zw.waveycapes.config.enums.CapeMovement;
-import dev.tr7zw.waveycapes.impl.PlayerImpl;
-import dev.tr7zw.waveycapes.renderer.CapeRendererImpl;
 import dev.tr7zw.waveycapes.sim.Simulation;
 import dev.tr7zw.waveycapes.util.Mth;
 import dev.tr7zw.waveycapes.util.cape.PoseStack;
@@ -17,76 +13,94 @@ import org.lwjgl.opengl.GL11;
 @SuppressWarnings("SameParameterValue")
 public class SmoothCapeRenderer implements CapeRenderer{
     @Override
-    public void render(PlayerEntity player, float delta, boolean undoTranslation) {
+    public void render(PlayerEntity player, float delta, float scale,  boolean undoTranslation) {
+        if(undoTranslation) {
+            CapeRenderer.undoVanillaCloakRotations(player, delta);
+        }
         Tessellator tessellator = Tessellator.INSTANCE;
         tessellator.startQuads();
         PoseStack poseStack = undoTranslation ? PoseStack.fromGlModelView() : new PoseStack();
         poseStack.pushPose();
 
         Matrix4 oldPositionMatrix = null;
-        for (int part = 0; part < CapeRendererImpl.partCount; part++) {
+        float s16 = scale * 16F;
+        float size96 = (0.96F / partCount);
+        for (int part = 0; part < partCount; part++) {
             modifyPoseStack(poseStack, player, delta, part, undoTranslation);
 
+            Matrix4 curPoseMatrix = poseStack.scale(s16, s16, s16).pose();
             if (oldPositionMatrix == null) {
-                oldPositionMatrix = poseStack.last().pose();
+                oldPositionMatrix = curPoseMatrix;
             }
 
             if (part == 0) {
-                addTopVertex(tessellator, poseStack.last().pose(), oldPositionMatrix,
+                addTopVertex(tessellator, curPoseMatrix, oldPositionMatrix,
                         0.3F,
                         0,
                         0F,
                         -0.3F,
                         0,
-                        -0.06F, part);
+                        -0.06F,
+                        part
+                );
             }
 
-            if (part == CapeRendererImpl.partCount - 1) {
-                addBottomVertex(tessellator, poseStack.last().pose(), poseStack.last().pose(),
+            if (part == partCount - 1) {
+                addBottomVertex(tessellator, curPoseMatrix, curPoseMatrix,
                         0.3F,
-                        (part + 1) * (0.96F / CapeRendererImpl.partCount),
+                        (part + 1) * size96,
                         0F,
                         -0.3F,
-                        (part + 1) * (0.96F / CapeRendererImpl.partCount),
-                        -0.06F, part);
+                        (part + 1) * size96,
+                        -0.06F,
+                        part
+                );
             }
 
-            addLeftVertex(tessellator, poseStack.last().pose(), oldPositionMatrix,
+            addLeftVertex(tessellator, curPoseMatrix, oldPositionMatrix,
                     -0.3F,
-                    (part + 1) * (0.96F / CapeRendererImpl.partCount),
+                    (part + 1) * size96,
                     0F,
                     -0.3F,
-                    part * (0.96F / CapeRendererImpl.partCount),
-                    -0.06F, part);
+                    part * size96,
+                    -0.06F,
+                    part
+            );
 
-            addRightVertex(tessellator, poseStack.last().pose(), oldPositionMatrix,
+            addRightVertex(tessellator, curPoseMatrix, oldPositionMatrix,
                     0.3F,
-                    (part + 1) * (0.96F / CapeRendererImpl.partCount),
+                    (part + 1) * size96,
                     0F,
                     0.3F,
-                    part * (0.96F / CapeRendererImpl.partCount),
-                    -0.06F, part);
+                    part * size96,
+                    -0.06F,
+                    part
+            );
 
-            addBackVertex(tessellator, poseStack.last().pose(), oldPositionMatrix,
+            addBackVertex(tessellator, curPoseMatrix, oldPositionMatrix,
                     0.3F,
-                    (part + 1) * (0.96F / CapeRendererImpl.partCount),
+                    (part + 1) * size96,
                     -0.06F,
                     -0.3F,
-                    part * (0.96F / CapeRendererImpl.partCount),
-                    -0.06F, part);
+                    part * size96,
+                    -0.06F,
+                    part
+            );
 
-            addFrontVertex(tessellator, oldPositionMatrix, poseStack.last().pose(),
+            addFrontVertex(tessellator, oldPositionMatrix, curPoseMatrix,
                     0.3F,
-                    (part + 1) * (0.96F / CapeRendererImpl.partCount),
+                    (part + 1) * size96,
                     0F,
                     -0.3F,
-                    part * (0.96F / CapeRendererImpl.partCount),
-                    0F, part);
+                    part * size96,
+                    0F,
+                    part
+            );
 
-            oldPositionMatrix = poseStack.last().pose();
+            oldPositionMatrix = curPoseMatrix;
             poseStack.popPose();
         }
-        // Vertices are baked with the full modelview matrix; reset it so draw() does not transform again.
+        // Vertices are baked with the full model view matrix; reset it so draw() does not transform again.
         GL11.glPushMatrix();
         GL11.glLoadIdentity();
         tessellator.draw();
@@ -120,8 +134,7 @@ public class SmoothCapeRenderer implements CapeRenderer{
         partRotation = Math.max(partRotation, 0);
         if(partRotation != 0)
             partRotation = (float) (Math.PI-partRotation);
-        partRotation *= 57.2958F;
-        partRotation *= 2F;
+        partRotation *= 114.5916F;
 
         float height = 0;
         if (player.isSneaking()) {
@@ -132,20 +145,21 @@ public class SmoothCapeRenderer implements CapeRenderer{
         }
 
         float naturalWindSwing = CapeRenderer.getNaturalWindSwing(part);
-
+        float offset = 0.48f / 16f;
+        float partOffset = part * 1f/partCount;
         // vanilla rotating and wind
         poseStack.mulPose(Vector3.XP.rotationDegrees(6.0F + height + naturalWindSwing));
         poseStack.mulPose(Vector3.ZP.rotationDegrees(sidewaysRotationOffset / 2.0F));
         poseStack.mulPose(Vector3.YP.rotationDegrees(180.0F - sidewaysRotationOffset / 2.0F));
-        poseStack.translate(x/CapeRendererImpl.partCount, y/ CapeRendererImpl.partCount, z/ CapeRendererImpl.partCount); // movement from the simulation
+        poseStack.translate(x/partCount, y/ partCount, z/ partCount); // movement from the simulation
         //offsetting so the rotation is on the cape part
         //float offset = (float) (part * (16 / CustomCapeRenderLayer.partCount))/16; // to fold the entire cape into one position for debugging
-        poseStack.translate(0, /*-offset*/ (0.48/16) , - (0.48/16)); // (0.48/16)
-        poseStack.translate(0, part * 1f/ CapeRendererImpl.partCount, 0);
+        poseStack.translate(0, offset , -offset); // (0.48/16)
+        poseStack.translate(0, partOffset, 0);
         poseStack.mulPose(Vector3.XP.rotationDegrees(-partRotation)); // apply actual rotation
         // undoing the rotation
-        poseStack.translate(0, -part * 1f/ CapeRendererImpl.partCount, 0);
-        poseStack.translate(0, -(0.48/16), (0.48/16));
+        poseStack.translate(0, -partOffset, 0);
+        poseStack.translate(0, -offset, offset);
 
     }
 
@@ -165,8 +179,8 @@ public class SmoothCapeRenderer implements CapeRenderer{
         double p = -Math.cos(n * 0.017453292F);
         float height = (float) e * 10.0F;
         height = Mth.clamp(height, -6.0F, 32.0F);
-        float swing = (float) (d * o + m * p) * CapeRenderer.easeOutSine(1.0F/ CapeRendererImpl.partCount*part)*100;
-        swing = Mth.clamp(swing, 0.0F, 150.0F * CapeRenderer.easeOutSine(1F/ CapeRendererImpl.partCount*part));
+        float swing = (float) (d * o + m * p) * CapeRenderer.easeOutSine(1F/ partCount*part)*100;
+        swing = Mth.clamp(swing, 0.0F, 150.0F * CapeRenderer.easeOutSine(1F/ partCount*part));
         float sidewaysRotationOffset = (float) (d * p - m * o) * 100.0F;
         sidewaysRotationOffset = Mth.clamp(sidewaysRotationOffset, -20.0F, 20.0F);
         float t = Mth.lerp(delta, player.prevStepBobbingAmount, player.stepBobbingAmount);
@@ -211,7 +225,7 @@ public class SmoothCapeRenderer implements CapeRenderer{
         float maxV = .53125F;
 
         float deltaV = maxV - minV;
-        float vPerPart = deltaV / CapeRendererImpl.partCount;
+        float vPerPart = deltaV / partCount;
         maxV = minV + (vPerPart * (part + 1));
         minV = minV + (vPerPart * part);
 
@@ -250,7 +264,7 @@ public class SmoothCapeRenderer implements CapeRenderer{
         float maxV = .53125F;
 
         float deltaV = maxV - minV;
-        float vPerPart = deltaV / CapeRendererImpl.partCount;
+        float vPerPart = deltaV / partCount;
         maxV = minV + (vPerPart * (part + 1));
         minV = minV + (vPerPart * part);
 
@@ -283,7 +297,7 @@ public class SmoothCapeRenderer implements CapeRenderer{
         float maxV = .53125F;
 
         float deltaV = maxV - minV;
-        float vPerPart = deltaV / CapeRendererImpl.partCount;
+        float vPerPart = deltaV / partCount;
         maxV = minV + (vPerPart * (part + 1));
         minV = minV + (vPerPart * part);
 
@@ -316,7 +330,7 @@ public class SmoothCapeRenderer implements CapeRenderer{
         float maxV = .53125F;
 
         float deltaV = maxV - minV;
-        float vPerPart = deltaV / CapeRendererImpl.partCount;
+        float vPerPart = deltaV / partCount;
         maxV = minV + (vPerPart * (part + 1));
         minV = minV + (vPerPart * part);
 
@@ -350,7 +364,7 @@ public class SmoothCapeRenderer implements CapeRenderer{
         float maxV = .03125F;
 
         float deltaV = maxV - minV;
-        float vPerPart = deltaV / CapeRendererImpl.partCount;
+        float vPerPart = deltaV / partCount;
         maxV = minV + (vPerPart * (part + 1));
         minV = minV + (vPerPart * part);
 
@@ -364,7 +378,7 @@ public class SmoothCapeRenderer implements CapeRenderer{
     }
 
     private static void vertexUVNormal(Tessellator tess, Matrix4 matrix4f, float f, float g, float h, float u, float v, float nx, float ny, float nz) {
-        Vector4 vector4f = new Vector4(f, g, h, 1.0F);
+        Vector4 vector4f = new Vector4(f, g, h, 1F);
         vector4f.transform(matrix4f);
         tess.normal(nx, ny, nz);
         tess.vertex(vector4f.x(), vector4f.y(), vector4f.z(), u, v);
@@ -391,7 +405,7 @@ public class SmoothCapeRenderer implements CapeRenderer{
         float maxV = .03125F;
 
         float deltaV = maxV - minV;
-        float vPerPart = deltaV / CapeRendererImpl.partCount;
+        float vPerPart = deltaV / partCount;
         maxV = minV + (vPerPart * (part + 1));
         minV = minV + (vPerPart * part);
 

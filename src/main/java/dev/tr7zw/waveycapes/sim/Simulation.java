@@ -15,6 +15,10 @@ public interface Simulation {
 
     void setGravity(float gravity);
 
+    boolean isSneaking();
+
+    void setSneaking(boolean sneaking);
+
     /**
      * @return true if it was re-initialized
      */

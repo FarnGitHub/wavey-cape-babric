@@ -4,6 +4,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import com.google.common.math.Quantiles;
 import dev.tr7zw.waveycapes.util.Mth;
 import dev.tr7zw.waveycapes.util.matrix.Matrix3;
 import dev.tr7zw.waveycapes.util.matrix.Matrix4;
@@ -37,24 +38,25 @@ public class PoseStack {
         return poseStack;
     }
 
-    public void translate(double d, double e, double f) {
+    public void translate(double x, double y, double z) {
         Pose pose = this.poseStack.getLast();
-        pose.pose.multiplyWithTranslation((float) d, (float) e, (float) f);
+        pose.pose.multiplyWithTranslation((float) x, (float) y, (float) z);
     }
 
-    public void scale(float f, float g, float h) {
+    public Pose scale(float x, float y, float z) {
         Pose pose = this.poseStack.getLast();
-        pose.pose.multiply(Matrix4.createScaleMatrix(f, g, h));
-        if (f == g && g == h) {
-            if (f > 0.0F)
-                return;
+        pose.pose.multiply(Matrix4.createScaleMatrix(x, y, z));
+        if (x == y && y == z) {
+            if (x > 0.0F)
+                return pose;
             pose.normal.mul(-1.0F);
         }
-        float i = 1.0F / f;
-        float j = 1.0F / g;
-        float k = 1.0F / h;
-        float l = Mth.fastInvCubeRoot(i * j * k);
-        pose.normal.mul(Matrix3.createScaleMatrix(l * i, l * j, l * k));
+        float xP = 1.0F / x;
+        float yP = 1.0F / y;
+        float zP = 1.0F / z;
+        float cb = Mth.fastInvCubeRoot(xP * yP * zP);
+        pose.normal.mul(Matrix3.createScaleMatrix(cb * xP, cb * yP, cb * zP));
+        return pose;
     }
 
     public void mulPose(Quaternion quaternion) {

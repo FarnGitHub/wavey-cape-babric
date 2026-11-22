@@ -12,14 +12,8 @@
   "environment": "client",
   "icon": "assets/waveycapes/icon.png",
   "entrypoints": {
-    "gcapi3:factory_provider": [
-      "dev.tr7zw.waveycapes.WaveyCapes"
-    ],
-    "gcapi3": [
-      "dev.tr7zw.waveycapes.WaveyCapes"
-    ],
-    "gcapi3:presave": [
-      "dev.tr7zw.waveycapes.WaveyCapes"
+    "modmenu": [
+      "dev.tr7zw.waveycapes.config.screen.ModMenuListener"
     ]
   },
   "mixins": [

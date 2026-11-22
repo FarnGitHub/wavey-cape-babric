@@ -29,6 +29,7 @@ public abstract class CapeSimulation implements Simulation {
     protected float gravityY = -1;
     protected float gravityZ = 0;
     private float gravity = 0;
+    private boolean sneaking = false;
     private float dirX, dirY, dirZ;
 
     protected CapeSimulation(int numIterations) {
@@ -224,6 +225,14 @@ public abstract class CapeSimulation implements Simulation {
 
     public void setGravity(float gravity) {
         this.gravity = gravity;
+    }
+
+    public boolean isSneaking() {
+        return this.sneaking;
+    }
+
+    public void setSneaking(boolean sneaking) {
+        this.sneaking = sneaking;
     }
 
     private final class CapePoint implements Point {
