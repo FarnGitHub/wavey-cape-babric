@@ -265,7 +265,7 @@ public abstract class ExtendedEntryListWidget extends EntryListWidget {
 		return false;
 	}
 
-	public boolean mouseReleased(int mouseX, int mouseY, int button) {
+	public void mouseReleased(int mouseX, int mouseY, int button) {
 		if(selectedIndex >= 0) {
 			int n = this.left + (this.width / 2 - this.getRowWidth() / 2 + 2);
 			int n2 = this.top + 4 - this.getScrollAmount() + (selectedIndex * this.itemHeight + this.headerHeight);
@@ -275,7 +275,6 @@ public abstract class ExtendedEntryListWidget extends EntryListWidget {
 			selectedIndex = -1;
 		}
 		this.setScrolling(true);
-		return false;
 	}
 
 	public abstract Entry getEntry(int var1);
