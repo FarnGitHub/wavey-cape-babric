@@ -3,14 +3,13 @@ package dev.tr7zw.waveycapes.config.screen.button;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import dev.tr7zw.waveycapes.util.Mth;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.resource.language.TranslationStorage;
 import org.lwjgl.opengl.GL11;
 
 public class SliderButtonWidget extends ButtonWidget {
-    private float value = 1.0F;
+    private float value;
     private final String translationKey;
     public boolean dragging;
     private final float min,max,steps;
