@@ -1,18 +1,18 @@
 
-text.wc.title=WaveyCapes Settings
+waveycapes.title=WaveyCapes Settings
 
-text.wc.setting.capestyle=Cape Style
-text.wc.setting.capestyle.true=Blocky
-text.wc.setting.capestyle.false=Smooth
-text.wc.setting.windmode=Wind mode
-text.wc.setting.windmode.true=Waves
-text.wc.setting.windmode.false=NONE
-text.wc.setting.capemovement=Cape Movement
-text.wc.setting.capemovement.VANILLA=Classic
-text.wc.setting.capemovement.BASIC_SIMULATION=Simulation
-text.wc.setting.capemovement.BASIC_SIMULATION_3D=Simulation V2
-text.wc.setting.capemovement.DUNGEONS=Dungeons
-text.wc.setting.capeparts=Cape Parts
-text.wc.setting.gravity=Gravity
-text.wc.setting.maxBend=Max. Bend Angle
-text.wc.setting.heightMultiplier=Height Multiplier
+waveycapes.capestyle=Cape Style
+waveycapes.capestyle.true=Blocky
+waveycapes.capestyle.false=Smooth
+waveycapes.windmode=Wind mode
+waveycapes.windmode.true=Waves
+waveycapes.windmode.false=NONE
+waveycapes.capemovement=Cape Movement
+waveycapes.capemovement.VANILLA=Classic
+waveycapes.capemovement.BASIC_SIMULATION=Simulation
+waveycapes.capemovement.BASIC_SIMULATION_3D=Simulation V2
+waveycapes.capemovement.DUNGEONS=Dungeons
+waveycapes.capeparts=Cape Parts
+waveycapes.gravity=Gravity
+waveycapes.maxBend=Max. Bend Angle
+waveycapes.heightMultiplier=Height Multiplier

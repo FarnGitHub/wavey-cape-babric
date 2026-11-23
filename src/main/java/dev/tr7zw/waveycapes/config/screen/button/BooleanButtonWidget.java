@@ -1,13 +1,13 @@
 package dev.tr7zw.waveycapes.config.screen.button;
 
+import dev.tr7zw.waveycapes.WaveyCapes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.resource.language.TranslationStorage;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-public class BooleanButtonWidget extends ButtonWidget {
+public class BooleanButtonWidget extends ButtonWidget implements OptionWidget {
     private final String translationKey;
     private final BooleanSupplier current;
     private final Consumer<Boolean> update;
@@ -17,22 +17,22 @@ public class BooleanButtonWidget extends ButtonWidget {
         this.translationKey = translationKey;
         this.current = current;
         this.update = update;
-    }
-
-    @Override
-    public void render(Minecraft minecraft, int mouseX, int p_drawButton_3_) {
-        this.text = TranslationStorage.getInstance().get(translationKey) + ": "
-                + TranslationStorage.getInstance().get(translationKey + "." + current.getAsBoolean(), new Object[0]);
-        super.render(minecraft, mouseX, p_drawButton_3_);
+        this.text = updateDisplayText();
     }
 
     @Override
     public boolean isMouseOver(Minecraft minecraft, int mouseX, int mouseY) {
         if (super.isMouseOver(minecraft, mouseX, mouseY)) {
-            update.accept(!current.getAsBoolean());
+            this.update.accept(!this.current.getAsBoolean());
+            this.text = updateDisplayText();
             return true;
         }
         return false;
+    }
+
+    @Override
+    public String updateDisplayText() {
+        return WaveyCapes.translate(translationKey) + ": " + WaveyCapes.translate(translationKey + "." + current.getAsBoolean());
     }
 
 }

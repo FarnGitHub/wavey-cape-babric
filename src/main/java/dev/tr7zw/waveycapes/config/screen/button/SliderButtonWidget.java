@@ -3,12 +3,12 @@ package dev.tr7zw.waveycapes.config.screen.button;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import dev.tr7zw.waveycapes.WaveyCapes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.resource.language.TranslationStorage;
 import org.lwjgl.opengl.GL11;
 
-public class SliderButtonWidget extends ButtonWidget {
+public class SliderButtonWidget extends ButtonWidget implements OptionWidget {
     private float value;
     private final String translationKey;
     public boolean dragging;
@@ -27,7 +27,7 @@ public class SliderButtonWidget extends ButtonWidget {
         this.current = current;
         this.update = update;
         this.value = ((current.get()-min) / (max-min));
-        this.text = TranslationStorage.getInstance().get(translationKey) + ": " + current.get();
+        this.text = updateDisplayText();
     }
 
     protected int getYImage(boolean hovered) {
@@ -73,6 +73,11 @@ public class SliderButtonWidget extends ButtonWidget {
         actualValue = (int)(actualValue/steps);
         actualValue *= steps;
         update.accept(actualValue);
-        this.text = TranslationStorage.getInstance().get(translationKey) + ": " + current.get();
+        this.text = updateDisplayText();
+    }
+
+    @Override
+    public String updateDisplayText() {
+        return WaveyCapes.translate(translationKey) + ": " + current.get();
     }
 }
