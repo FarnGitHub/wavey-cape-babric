@@ -14,9 +14,6 @@ import org.lwjgl.opengl.GL11;
 public class SmoothCapeRenderer implements CapeRenderer{
     @Override
     public void render(PlayerEntity player, float delta, float scale,  boolean undoTranslation) {
-        if(undoTranslation) {
-            CapeRenderer.undoVanillaCloakRotations(player, delta);
-        }
         Tessellator tessellator = Tessellator.INSTANCE;
         tessellator.startQuads();
         PoseStack poseStack = undoTranslation ? PoseStack.fromGlModelView() : new PoseStack();
@@ -144,7 +141,7 @@ public class SmoothCapeRenderer implements CapeRenderer{
             }
         }
 
-        float naturalWindSwing = CapeRenderer.getNaturalWindSwing(part);
+        float naturalWindSwing = getNaturalWindSwing(part);
         float offset = 0.48f / 16f;
         float partOffset = part * 1f/partCount;
         // vanilla rotating and wind
@@ -179,8 +176,8 @@ public class SmoothCapeRenderer implements CapeRenderer{
         double p = -Math.cos(n * 0.017453292F);
         float height = (float) e * 10.0F;
         height = Mth.clamp(height, -6.0F, 32.0F);
-        float swing = (float) (d * o + m * p) * CapeRenderer.easeOutSine(1F/ partCount*part)*100;
-        swing = Mth.clamp(swing, 0.0F, 150.0F * CapeRenderer.easeOutSine(1F/ partCount*part));
+        float swing = (float) (d * o + m * p) * easeOutSine(1F/ partCount*part)*100;
+        swing = Mth.clamp(swing, 0.0F, 150.0F * easeOutSine(1F/ partCount*part));
         float sidewaysRotationOffset = (float) (d * p - m * o) * 100.0F;
         sidewaysRotationOffset = Mth.clamp(sidewaysRotationOffset, -20.0F, 20.0F);
         float t = Mth.lerp(delta, player.prevStepBobbingAmount, player.stepBobbingAmount);
@@ -192,7 +189,7 @@ public class SmoothCapeRenderer implements CapeRenderer{
             }
         }
 
-        float naturalWindSwing = CapeRenderer.getNaturalWindSwing(part);
+        float naturalWindSwing = getNaturalWindSwing(part);
 
         poseStack.mulPose(Vector3.XP.rotationDegrees(6.0F + swing / 2.0F + height + naturalWindSwing));
         poseStack.mulPose(Vector3.ZP.rotationDegrees(sidewaysRotationOffset / 2.0F));

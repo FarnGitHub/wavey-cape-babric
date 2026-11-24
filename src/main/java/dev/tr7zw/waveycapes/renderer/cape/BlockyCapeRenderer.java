@@ -19,10 +19,6 @@ public class BlockyCapeRenderer implements CapeRenderer {
 
     @Override
     public void render(PlayerEntity player, float delta, float scale, boolean undoTranslation) {
-        if(undoTranslation) {
-            CapeRenderer.undoVanillaCloakRotations(player, delta);
-        }
-
         for (int part = 0; part < customCape.length; part++) {
             ModelPart model = customCape[part];
             GL11.glPushMatrix();
@@ -68,7 +64,7 @@ public class BlockyCapeRenderer implements CapeRenderer {
             }
         }
 
-        height += CapeRenderer.getNaturalWindSwing(part);
+        height += getNaturalWindSwing(part);
         float offset = 0.48f / 16f;
         float partOffset = part * 1f/customCape.length;
         GL11.glRotatef(6.0F + height, 1.0F, 0.0F, 0.0F);
@@ -83,8 +79,8 @@ public class BlockyCapeRenderer implements CapeRenderer {
         GL11.glTranslated(0, -offset, offset);
     }
 
-    private void modifyPoseStackVanilla(PlayerEntity abstractClientPlayer, float h, int part, boolean atVanillaCloakMatrix) {
-        if (!atVanillaCloakMatrix) {
+    private void modifyPoseStackVanilla(PlayerEntity abstractClientPlayer, float h, int part, boolean undoTranslation) {
+        if (!undoTranslation) {
             GL11.glTranslated(0.0D, 0.0D, 0.125D);
         }
         double d = Mth.lerp(h, abstractClientPlayer.prevCapeX, abstractClientPlayer.capeX)
@@ -98,20 +94,20 @@ public class BlockyCapeRenderer implements CapeRenderer {
         double p = -Math.cos(n * 0.017453292F);
         float height = (float) e * 10.0F;
         height = Mth.clamp(height, -6.0F, 32.0F);
-        float swing = (float) (d * o + m * p) * CapeRenderer.easeOutSine(1.0F/customCape.length*part)*100;
-        swing = Mth.clamp(swing, 0.0F, 150.0F * CapeRenderer.easeOutSine(1F/customCape.length*part));
+        float swing = (float) (d * o + m * p) * easeOutSine(1.0F/customCape.length*part)*100;
+        swing = Mth.clamp(swing, 0.0F, 150.0F * easeOutSine(1F/customCape.length*part));
         float sidewaysRotationOffset = (float) (d * p - m * o) * 100.0F;
         sidewaysRotationOffset = Mth.clamp(sidewaysRotationOffset, -20.0F, 20.0F);
         float t = Mth.lerp(h, abstractClientPlayer.prevStepBobbingAmount, abstractClientPlayer.stepBobbingAmount);
         height += (float)Math.sin(Mth.lerp(h, abstractClientPlayer.prevHorizontalSpeed, abstractClientPlayer.horizontalSpeed) * 6.0F) * 32.0F * t;
         if (abstractClientPlayer.isSneaking()) {
             height += 25.0F;
-            if (!atVanillaCloakMatrix) {
+            if (!undoTranslation) {
                 GL11.glTranslatef(0.0F, 0.15F, 0.0F);
             }
         }
 
-        float naturalWindSwing = CapeRenderer.getNaturalWindSwing(part);
+        float naturalWindSwing = getNaturalWindSwing(part);
 
         GL11.glRotatef(6.0F + swing / 2.0F + height + naturalWindSwing, 1.0F, 0.0F, 0.0F);
         GL11.glRotatef(sidewaysRotationOffset / 2.0F, 0.0F, 0.0F, 1.0F);
